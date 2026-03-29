@@ -1,0 +1,11 @@
+node_modules
+.npm-cache
+dist
+.env
+.env.local
+coverage
+.DS_Store
+backend/generated
+frontend/dist
+backend/prisma/dev.db
+*.log

@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  NURSE
+  DOCTOR
+  MANAGER
+  ADMIN
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  ATTENDED
+  NO_SHOW
+  CANCELLED
+  RESCHEDULED
+}
+
+enum TimelineType {
+  ATTENDED
+  NO_SHOW
+  RESCHEDULED
+  PHONE_FOLLOWUP
+  NOTE
+  LAB_ORDER
+  XRAY_ORDER
+  SURGERY
+  ALLERGY
+  MEDICATION
+}
+
+enum NoShowReason {
+  FORGOT
+  SICK
+  TRANSPORTATION
+  FINANCIAL
+  NO_ANSWER
+  OTHER
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role
+  clinicId     String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  timelineEntries TimelineEntry[]
+  appointments    Appointment[]   @relation("CreatedBy")
+
+  @@index([username])
+}
+
+model Patient {
+  id                String      @id @default(cuid())
+  hn                String      @unique
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime
+  gender            String
+  bloodType         String?
+  phone             String?
+  idCard            String?     @unique
+  passportNo        String?
+  insuranceType     String?
+  allergies         String[]
+  totalAppointments Int         @default(0)
+  totalAttended     Int         @default(0)
+  totalNoShows      Int         @default(0)
+  noShowScore       Float       @default(0)
+  riskLevel         RiskLevel   @default(LOW)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  appointments    Appointment[]
+  timelineEntries TimelineEntry[]
+
+  @@index([hn])
+  @@index([firstName, lastName])
+  @@index([riskLevel])
+}
+
+model Clinic {
+  id       String  @id @default(cuid())
+  name     String
+  nameEn   String?
+  isActive Boolean @default(true)
+
+  appointments Appointment[]
+  rooms        Room[]
+}
+
+model Room {
+  id       String @id @default(cuid())
+  name     String
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
+
+  appointments Appointment[]
+}
+
+model Doctor {
+  id        String  @id @default(cuid())
+  prefix    String
+  firstName String
+  lastName  String
+  specialty String?
+  clinicId  String?
+  isActive  Boolean @default(true)
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id              String            @id @default(cuid())
+  patientId       String
+  clinicId        String
+  doctorId        String?
+  roomId          String?
+  createdBy       String
+  appointmentDate DateTime
+  timeFrom        String
+  timeTo          String
+  reason          String
+  notes           String?
+  status          AppointmentStatus @default(SCHEDULED)
+  noShowReason    NoShowReason?
+  contactAttempts Int               @default(0)
+  confirmedAt     DateTime?
+  attendedAt      DateTime?
+  cancelledAt     DateTime?
+  overdueFlag     Boolean           @default(false)
+  smsReminderSent Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  patient         Patient           @relation(fields: [patientId], references: [id])
+  clinic          Clinic            @relation(fields: [clinicId], references: [id])
+  doctor          Doctor?           @relation(fields: [doctorId], references: [id])
+  room            Room?             @relation(fields: [roomId], references: [id])
+  creator         User              @relation("CreatedBy", fields: [createdBy], references: [id])
+  timelineEntries TimelineEntry[]
+
+  @@index([patientId])
+  @@index([appointmentDate])
+  @@index([status])
+  @@index([overdueFlag])
+}
+
+model TimelineEntry {
+  id                String        @id @default(cuid())
+  patientId         String
+  appointmentId     String?
+  createdById       String
+  type              TimelineType
+  entryDate         DateTime
+  clinicName        String?
+  doctorName        String?
+  notes             String?
+  noShowReason      NoShowReason?
+  originalCreatedAt DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  lastEditedBy      String?
+  lastEditedAt      DateTime?
+
+  patient     Patient      @relation(fields: [patientId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  creator     User         @relation(fields: [createdById], references: [id])
+
+  @@index([patientId])
+  @@index([entryDate])
+}
