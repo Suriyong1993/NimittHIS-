@@ -80,90 +80,60 @@ Backend runs at `http://localhost:3001`
 - `manager01 / mgr123`
 - `admin01 / admin123`
 
-## Recommended deployment split
+## Deployment direction
 
-For the current architecture, the cleanest split is:
+The project is now being aligned toward:
 
 - Frontend: Vercel
-- Backend: Render web service
 - Database: Supabase Postgres
-- Redis: Upstash Redis
+- Future backend direction: migrate backend responsibilities away from the current long-running Express + Redis architecture into a Vercel + Supabase-friendly setup
 
-This is simpler than forcing the current long-running Express + Redis + cron-based backend fully into Vercel Functions.
+At this checkpoint, the frontend is ready to deploy on Vercel, and the repository is ready to continue refactoring toward a Vercel + Supabase-only stack.
 
 ## Deployment config included
 
-- [render.yaml](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/render.yaml): Render Blueprint for the backend
 - [frontend/vercel.json](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/frontend/vercel.json): SPA rewrite config for React Router on Vercel
-- [backend/.env.render.example](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/backend/.env.render.example): backend production env template
 - [frontend/.env.production.example](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/frontend/.env.production.example): frontend production env template
 
-## Vercel frontend setup
+## Vercel project settings
 
-Create a Vercel project from this repository and set:
+From your screenshot, the Vercel import is currently using:
+
+- Root Directory: `./`
+- Preset: `Other`
+
+For this repository, those should be changed to:
 
 - Root Directory: `frontend`
 - Framework Preset: `Vite`
-- Environment Variable: `VITE_API_URL=https://YOUR_RENDER_SERVICE.onrender.com/api`
+
+This is important because the deployable frontend app lives under `frontend/`, not the repository root.
 
 The included [frontend/vercel.json](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/frontend/vercel.json) rewrites all routes to `index.html` so React Router routes like `/patients/:id` work on refresh.
 
-## Render backend setup
+## Current Vercel env
 
-Create a Render Blueprint from this repository or create a Web Service manually with:
-
-- Root Directory: `backend`
-- Build Command: `npm install && npm run prisma:generate && npm run build`
-- Pre-Deploy Command: `npm run prisma:push`
-- Start Command: `npm run start`
-- Health Check Path: `/health`
-
-The included [render.yaml](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/render.yaml) already captures this setup.
-
-## Supabase setup for Prisma
-
-Use Supabase Postgres as the app database.
-
-- For persistent backend traffic on Render, use the Supavisor session pooler string on port `5432`
-- Put that value into `DATABASE_URL`
-- If you later move Prisma to a serverless runtime, switch to transaction mode and add `pgbouncer=true`
-
-## Upstash setup
-
-Use the standard TLS Redis connection string from Upstash:
-
-- Format: `rediss://default:PASSWORD@ENDPOINT:6379`
-- Put that value into `REDIS_URL`
-
-The current backend uses `ioredis`, so a normal Upstash Redis URL works without changing application code.
-
-## Production env checklist
-
-Backend on Render:
-
-- `DATABASE_URL`
-- `REDIS_URL`
-- `JWT_SECRET`
-- `JWT_REFRESH_SECRET`
-- `CORS_ORIGIN`
-- `FRONTEND_URL`
-- Optional Twilio vars if you want real SMS
-
-Frontend on Vercel:
+Frontend on Vercel should have:
 
 - `VITE_API_URL`
 
-## First production deploy
+Right now, if you are deploying frontend only, this can temporarily point to a future backend URL. Once we migrate the data/auth layer deeper into Supabase, we may reduce or remove this dependency.
 
-1. Create Supabase project and copy the session pooler connection string.
-2. Create Upstash Redis and copy the TLS Redis URL.
-3. Deploy backend on Render using [render.yaml](C:/Users/Administrator/Documents/Trae%20Project/NimittHIS%20%20APP/render.yaml).
-4. Add backend env values in Render.
-5. Deploy frontend on Vercel with root directory `frontend`.
-6. Add `VITE_API_URL` in Vercel.
-7. Update `CORS_ORIGIN` and `FRONTEND_URL` in Render to the final Vercel domain.
+## Supabase project
+
+From your screenshot, the Supabase project is live and healthy. The project URL shown there will be used later when we wire:
+
+- Supabase database access
+- Supabase auth, if we replace custom JWT auth
+- Supabase edge/server-side functions, if we move server work off Express
+
+## Recommended next step
+
+1. Fix the Vercel project import settings to `frontend` + `Vite`
+2. Finish the first Vercel deploy
+3. Then refactor the app from Express/Redis assumptions toward Supabase-native auth/data flows
 
 ## Notes
 
-- `npm run prisma:push` is used for convenience because this repository does not yet include checked-in Prisma migrations.
+- The current backend code is still present in the repo because it contains business logic, schema, and seeded domain behavior we can migrate incrementally.
 - Seed data is intended for demo/staging use. Do not run `npm run seed` against a real production database unless you explicitly want demo records.
