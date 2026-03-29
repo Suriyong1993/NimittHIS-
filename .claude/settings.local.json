@@ -5,7 +5,10 @@
       "Bash(cd /c/Users/Administrator/Documents/Trae Project/NimittHIS APP/frontend)",
       "Bash(xargs ls:*)",
       "Bash(cd /c/Users/Administrator/Documents/Trae Project/NimittHIS APP)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "mcp__claude_ai_Vercel__list_deployments",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs",
+      "mcp__claude_ai_Vercel__get_deployment"
     ]
   }
 }
