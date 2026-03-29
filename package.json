@@ -2,11 +2,15 @@
   "name": "nimitthis",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "workspaces": [
     "backend",
     "frontend"
   ],
   "scripts": {
+    "postinstall": "npm run prisma:generate --workspace backend",
     "dev": "npm run dev --workspace backend",
     "dev:backend": "npm run dev --workspace backend",
     "dev:frontend": "npm run dev --workspace frontend",
