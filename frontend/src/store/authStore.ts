@@ -10,6 +10,7 @@ interface AuthState {
   isBootstrapping: boolean
   isReady: boolean
   loginAction: (payload: LoginPayload) => Promise<void>
+  registerAction: (payload: LoginPayload) => Promise<void>
   bootstrap: () => Promise<void>
   syncSession: (event: AuthChangeEvent, user: User | null) => void
   logout: () => Promise<void>
@@ -47,6 +48,29 @@ export const useAuthStore = create<AuthState>((set) => ({
       isBootstrapping: false,
       isReady: true
     })
+  },
+  async registerAction(payload) {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase.auth.signUp({
+      email: payload.email,
+      password: payload.password,
+      options: {
+        data: { role: 'ADMIN' }
+      }
+    })
+
+    if (error) {
+      throw error
+    }
+
+    if (data.session && data.user) {
+      set({
+        user: mapUser(data.user),
+        isAuthenticated: true,
+        isBootstrapping: false,
+        isReady: true
+      })
+    }
   },
   async bootstrap() {
     const supabase = getSupabaseClient()

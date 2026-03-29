@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -55,7 +55,9 @@ export function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const loginAction = useAuthStore((state) => state.loginAction)
+  const registerAction = useAuthStore((state) => state.registerAction)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const [isRegisterMode, setIsRegisterMode] = useState(false)
   const nextPath = searchParams?.get("next") || "/dashboard"
 
   const { register, handleSubmit, formState } = useForm<LoginForm>({
@@ -67,8 +69,13 @@ export function LoginPage() {
   })
 
   const mutation = useMutation({
-    mutationFn: loginAction,
-    onSuccess: () => router.replace(nextPath)
+    mutationFn: (values: LoginForm) => isRegisterMode ? registerAction(values) : loginAction(values),
+    onSuccess: () => {
+      if (isRegisterMode) {
+        alert("สร้างบัญชีสำเร็จ! (หากขึ้น Error ติดต่อฐานข้อมูล ให้ตรวจสอบการตั้งค่า Email ยืนยันใน Supabase)")
+      }
+      router.replace(nextPath)
+    }
   })
 
   useEffect(() => {
@@ -143,9 +150,15 @@ export function LoginPage() {
               onSubmit={handleSubmit((values) => mutation.mutate(values))}
             >
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-nimitt-faint">เข้าสู่ระบบ</p>
-                <h2 className="mt-2 text-3xl font-semibold text-nimitt-ink">เริ่มต้นเวรวันนี้</h2>
-                <p className="mt-1 text-sm text-nimitt-muted">กรอกข้อมูลเพื่อเข้าใช้งานระบบ</p>
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-nimitt-faint">
+                  {isRegisterMode ? "ลงทะเบียนแอดมิน" : "เข้าสู่ระบบ"}
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold text-nimitt-ink">
+                  {isRegisterMode ? "สร้างบัญชีผู้ใช้งานใหม่" : "เริ่มต้นเวรวันนี้"}
+                </h2>
+                <p className="mt-1 text-sm text-nimitt-muted">
+                  {isRegisterMode ? "กรอกอีเมลและตั้งรหัสผ่านที่ต้องการ" : "กรอกข้อมูลเพื่อเข้าใช้งานระบบ"}
+                </p>
               </div>
 
               <label className="block space-y-1.5">
@@ -181,15 +194,32 @@ export function LoginPage() {
                     <line x1="12" y1="8" x2="12" y2="12" />
                     <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
-                  <span className="text-sm text-nimitt-red">เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่านอีกครั้ง</span>
+                  <span className="text-sm text-nimitt-red">
+                    {isRegisterMode 
+                      ? "สร้างบัญชีไม่สำเร็จ (อีเมลอาจจะซ้ำ หรือห้ามใช้นามสกุล .local)"
+                      : "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่านอีกครั้ง"}
+                  </span>
                 </div>
               )}
 
               <Button type="submit" fullWidth size="lg" loading={mutation.isPending}>
-                {mutation.isPending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+                {mutation.isPending 
+                  ? (isRegisterMode ? "กำลังสร้างบัญชี..." : "กำลังเข้าสู่ระบบ...") 
+                  : (isRegisterMode ? "สร้างบัญชีผู้ใช้งาน" : "เข้าสู่ระบบ")}
               </Button>
 
-              <p className="text-center text-xs text-nimitt-faint">
+              <div className="mt-4 text-center text-sm text-nimitt-muted">
+                {isRegisterMode ? "มีบัญชีอยู่แล้ว? " : "ยังไม่มีบัญชีใช่หรือไม่? "}
+                <button 
+                  type="button" 
+                  onClick={() => setIsRegisterMode(!isRegisterMode)} 
+                  className="font-semibold text-nimitt-blue hover:underline"
+                >
+                  {isRegisterMode ? "เข้าสู่ระบบที่นี่" : "สร้างบัญชีใหม่"}
+                </button>
+              </div>
+
+              <p className="text-center text-xs text-nimitt-faint mt-4">
                 ระบบนี้สงวนสิทธิ์สำหรับบุคลากรโรงพยาบาลที่ได้รับอนุญาตเท่านั้น
               </p>
             </form>
