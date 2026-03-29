@@ -4,13 +4,32 @@
 
 @layer base {
   :root {
-    color: #111110;
-    background: #f7f7f5;
-    font-family: var(--font-thai), sans-serif;
+    --color-primary: #2563eb;
+    --color-bg: #f7f7f5;
+    --color-surface: #ffffff;
+    --color-ink: #111110;
+    --color-muted: #6b6b65;
+    --color-border: #e5e5e0;
   }
 
   * {
     @apply border-nimitt-border;
+    scrollbar-width: thin;
+    scrollbar-color: #d4d4ce transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #d4d4ce;
+    border-radius: 9999px;
   }
 
   html,
@@ -20,8 +39,9 @@
 
   body {
     @apply m-0 bg-nimitt-bg text-nimitt-ink antialiased;
-    background-image: radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
-      radial-gradient(circle at bottom right, rgba(8, 145, 178, 0.07), transparent 22%);
+    background-image:
+      radial-gradient(ellipse at 0% 0%, rgba(37, 99, 235, 0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(8, 145, 178, 0.06) 0%, transparent 50%);
   }
 
   button,
@@ -29,5 +49,129 @@
   select,
   textarea {
     font: inherit;
+  }
+}
+
+/* ─── Keyframe Animations ─── */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-bar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* ─── Utility Classes ─── */
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.35s ease both;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease both;
+  }
+
+  .animate-slide-in-left {
+    animation: slide-in-left 0.35s ease both;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 1.6s infinite linear;
+    background: linear-gradient(90deg, #f0f0ee 25%, #e4e4e0 50%, #f0f0ee 75%);
+    background-size: 800px 100%;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 1.2s linear infinite;
+  }
+
+  /* Staggered entrance helpers */
+  .delay-75 {
+    animation-delay: 75ms;
+  }
+  .delay-150 {
+    animation-delay: 150ms;
+  }
+  .delay-225 {
+    animation-delay: 225ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  /* Card hover lift */
+  .card-lift {
+    @apply transition-all duration-200;
+  }
+
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 64px rgba(17, 17, 16, 0.12);
   }
 }

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/Administrator/Documents/Trae Project/NimittHIS APP/backend)",
+      "Bash(cd /c/Users/Administrator/Documents/Trae Project/NimittHIS APP/frontend)",
+      "Bash(xargs ls:*)",
+      "Bash(cd /c/Users/Administrator/Documents/Trae Project/NimittHIS APP)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

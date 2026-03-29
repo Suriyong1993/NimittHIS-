@@ -9,3 +9,4 @@ backend/generated
 frontend/dist
 backend/prisma/dev.db
 *.log
+frontend/.next
