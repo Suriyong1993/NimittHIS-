@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios"
 
+import { supabase } from "../lib/supabase"
 import { useAuthStore } from "../store/authStore"
 
 const apiClient = axios.create({
@@ -8,10 +9,13 @@ const apiClient = axios.create({
 
 let refreshPromise: Promise<string | null> | null = null
 
-apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+apiClient.interceptors.request.use(async (config) => {
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
+
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`
   }
 
   return config
@@ -30,14 +34,16 @@ apiClient.interceptors.response.use(
     }
 
     if (!refreshPromise) {
-      refreshPromise = useAuthStore.getState().refreshSession()
+      refreshPromise = supabase.auth
+        .refreshSession()
+        .then(({ data }) => data.session?.access_token ?? null)
     }
 
     const token = await refreshPromise
     refreshPromise = null
 
     if (!token) {
-      useAuthStore.getState().logout()
+      await useAuthStore.getState().logout()
       return Promise.reject(error)
     }
 

@@ -23,8 +23,8 @@ export function TopBar() {
         </div>
         <Button
           variant="secondary"
-          onClick={() => {
-            logout()
+          onClick={async () => {
+            await logout()
             navigate("/login")
           }}
         >

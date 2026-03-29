@@ -4,12 +4,12 @@ import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { z } from "zod"
 
-import { Card } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
+import { Card } from "../components/ui/Card"
 import { useAuthStore } from "../store/authStore"
 
 const loginSchema = z.object({
-  username: z.string().min(1, "กรุณากรอกชื่อผู้ใช้"),
+  email: z.string().email("กรุณากรอกอีเมลให้ถูกต้อง"),
   password: z.string().min(1, "กรุณากรอกรหัสผ่าน")
 })
 
@@ -18,10 +18,11 @@ type LoginForm = z.infer<typeof loginSchema>
 export function LoginPage() {
   const navigate = useNavigate()
   const loginAction = useAuthStore((state) => state.loginAction)
+
   const { register, handleSubmit, formState } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "nurse01",
+      email: "nurse01@nimitthis.local",
       password: "nurse123"
     }
   })
@@ -40,7 +41,7 @@ export function LoginPage() {
             แพลตฟอร์มติดตามนัดหมายผู้ป่วยสำหรับงานบริการโรงพยาบาลไทย
           </h1>
           <p className="mt-5 max-w-xl text-base leading-8 text-white/70">
-            มองเห็นผู้ป่วยเสี่ยงขาดนัด, ตรวจ timeline ย้อนหลัง, และสรุปภาพรวมการมาตามนัดของแต่ละคลินิกได้ในระบบเดียว
+            มองเห็นผู้ป่วยเสี่ยงขาดนัด ตรวจ timeline ย้อนหลัง และสรุปภาพรวมการมาตามนัดของแต่ละคลินิกได้ในระบบเดียว
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
             {[
@@ -64,12 +65,12 @@ export function LoginPage() {
             </div>
 
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-nimitt-ink">ชื่อผู้ใช้</span>
+              <span className="text-sm font-medium text-nimitt-ink">อีเมล</span>
               <input
-                {...register("username")}
+                {...register("email")}
                 className="w-full rounded-2xl border border-nimitt-border bg-white px-4 py-3 outline-none transition focus:border-nimitt-blue"
               />
-              <span className="text-sm text-nimitt-red">{formState.errors.username?.message}</span>
+              <span className="text-sm text-nimitt-red">{formState.errors.email?.message}</span>
             </label>
 
             <label className="block space-y-2">
@@ -84,7 +85,7 @@ export function LoginPage() {
 
             {mutation.isError ? (
               <div className="rounded-2xl bg-nimitt-red-bg px-4 py-3 text-sm text-nimitt-red">
-                เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง
+                เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่านอีกครั้ง
               </div>
             ) : null}
 

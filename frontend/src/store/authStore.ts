@@ -1,133 +1,68 @@
 import { create } from "zustand"
 
-import {
-  getCurrentUser,
-  login,
-  refreshToken,
-  type AuthUser,
-  type LoginPayload
-} from "../api/auth"
+import type { AuthUser, LoginPayload } from "../api/auth"
+import { supabase } from "../lib/supabase"
 
 interface AuthState {
   user: AuthUser | null
-  accessToken: string | null
-  refreshTokenValue: string | null
   isAuthenticated: boolean
   isBootstrapping: boolean
   loginAction: (payload: LoginPayload) => Promise<void>
-  refreshSession: () => Promise<string | null>
   bootstrap: () => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
-const storageKey = "nimitthis-auth"
-
-const loadPersistedState = () => {
-  const raw = window.localStorage.getItem(storageKey)
-  if (!raw) {
-    return {
-      accessToken: null,
-      refreshTokenValue: null
-    }
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as { accessToken?: string; refreshTokenValue?: string }
-    return {
-      accessToken: parsed.accessToken ?? null,
-      refreshTokenValue: parsed.refreshTokenValue ?? null
-    }
-  } catch {
-    return {
-      accessToken: null,
-      refreshTokenValue: null
-    }
+function mapUser(user: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }): AuthUser {
+  return {
+    id: user.id,
+    email: user.email ?? "",
+    firstName: String(user.user_metadata?.first_name ?? "ผู้ใช้"),
+    lastName: String(user.user_metadata?.last_name ?? "ระบบ"),
+    role: String(user.user_metadata?.role ?? "NURSE") as AuthUser["role"]
   }
 }
 
-const persistState = (accessToken: string | null, refreshTokenValue: string | null) => {
-  window.localStorage.setItem(
-    storageKey,
-    JSON.stringify({
-      accessToken,
-      refreshTokenValue
-    })
-  )
-}
-
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isBootstrapping: true,
-  ...loadPersistedState(),
   async loginAction(payload) {
-    const result = await login(payload)
-    persistState(result.accessToken, result.refreshToken)
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: payload.email,
+      password: payload.password
+    })
+
+    if (error || !data.user) {
+      throw error ?? new Error("Login failed")
+    }
+
     set({
-      user: result.user,
-      accessToken: result.accessToken,
-      refreshTokenValue: result.refreshToken,
+      user: mapUser(data.user),
       isAuthenticated: true
     })
   },
-  async refreshSession() {
-    const currentRefreshToken = get().refreshTokenValue
-    if (!currentRefreshToken) {
-      return null
-    }
-
-    try {
-      const nextAccessToken = await refreshToken(currentRefreshToken)
-      persistState(nextAccessToken, currentRefreshToken)
-      set({
-        accessToken: nextAccessToken,
-        isAuthenticated: true
-      })
-      return nextAccessToken
-    } catch {
-      get().logout()
-      return null
-    }
-  },
   async bootstrap() {
-    if (!get().accessToken || !get().refreshTokenValue) {
+    const { data } = await supabase.auth.getSession()
+
+    if (!data.session?.user) {
       set({
-        isBootstrapping: false,
-        isAuthenticated: false
+        user: null,
+        isAuthenticated: false,
+        isBootstrapping: false
       })
       return
     }
 
-    try {
-      const profile = await getCurrentUser()
-      set({
-        user: profile,
-        isAuthenticated: true,
-        isBootstrapping: false
-      })
-    } catch {
-      const token = await get().refreshSession()
-      if (!token) {
-        set({
-          isBootstrapping: false
-        })
-        return
-      }
-
-      const profile = await getCurrentUser()
-      set({
-        user: profile,
-        isAuthenticated: true,
-        isBootstrapping: false
-      })
-    }
+    set({
+      user: mapUser(data.session.user),
+      isAuthenticated: true,
+      isBootstrapping: false
+    })
   },
-  logout() {
-    persistState(null, null)
+  async logout() {
+    await supabase.auth.signOut()
     set({
       user: null,
-      accessToken: null,
-      refreshTokenValue: null,
       isAuthenticated: false,
       isBootstrapping: false
     })
