@@ -61,8 +61,8 @@ export function NoShowTrackingPage() {
     staleTime: 60_000
   })
 
-  const riskItems: Record<string, unknown>[] = riskQuery.data?.items ?? []
-  const overdueItems: Record<string, unknown>[] = overdueQuery.data?.items ?? []
+  const riskItems: Record<string, unknown>[] = (riskQuery.data as { data?: Record<string, unknown>[] } | undefined)?.data ?? []
+  const overdueItems: Record<string, unknown>[] = (overdueQuery.data as Record<string, unknown>[] | undefined) ?? []
 
   return (
     <div className="grid gap-5">

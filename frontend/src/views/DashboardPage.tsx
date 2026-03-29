@@ -194,7 +194,7 @@ export function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : !todayQuery.data?.items?.length ? (
+          ) : !(todayQuery.data as Record<string, unknown>[] | undefined)?.length ? (
             <div className="mt-8 flex flex-col items-center gap-2 py-6 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-nimitt-bg text-nimitt-faint">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -208,7 +208,7 @@ export function DashboardPage() {
             </div>
           ) : (
             <ul className="mt-4 divide-y divide-nimitt-border">
-              {(todayQuery.data?.items ?? []).slice(0, 10).map((appt: Record<string, unknown>, i: number) => {
+              {((todayQuery.data as Record<string, unknown>[] | undefined) ?? []).slice(0, 10).map((appt: Record<string, unknown>, i: number) => {
                 const status = STATUS_MAP[String(appt.status)] ?? { label: String(appt.status), tone: "blue" as const }
                 return (
                   <li
@@ -263,7 +263,7 @@ export function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : !highRiskQuery.data?.items?.length ? (
+          ) : !(highRiskQuery.data as { data?: unknown[] } | undefined)?.data?.length ? (
             <div className="mt-8 flex flex-col items-center gap-2 py-6 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-nimitt-green-bg text-nimitt-green">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -274,7 +274,7 @@ export function DashboardPage() {
             </div>
           ) : (
             <ul className="mt-4 space-y-2">
-              {(highRiskQuery.data?.items ?? []).slice(0, 5).map((patient: Record<string, unknown>, i: number) => {
+              {(((highRiskQuery.data as { data?: Record<string, unknown>[] } | undefined)?.data) ?? []).slice(0, 5).map((patient: Record<string, unknown>, i: number) => {
                 const risk = RISK_MAP[String(patient.riskLevel)] ?? { label: "—", tone: "amber" as const }
                 return (
                   <li

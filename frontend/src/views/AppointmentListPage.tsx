@@ -48,8 +48,8 @@ export function AppointmentListPage() {
     staleTime: 30_000
   })
 
-  const items: Record<string, unknown>[] = data?.items ?? []
-  const total: number = data?.total ?? 0
+  const items: Record<string, unknown>[] = (data as { data?: Record<string, unknown>[] } | undefined)?.data ?? []
+  const total: number = (data as { total?: number } | undefined)?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / 15))
 
   return (

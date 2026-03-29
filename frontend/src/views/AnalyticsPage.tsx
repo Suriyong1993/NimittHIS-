@@ -54,8 +54,8 @@ export function AnalyticsPage() {
   })
 
   const stats = statsQuery.data?.todayStats
-  const trendData: Record<string, unknown>[] = trendQuery.data?.buckets ?? []
-  const clinicData: Record<string, unknown>[] = clinicQuery.data?.clinics ?? []
+  const trendData: Record<string, unknown>[] = (trendQuery.data as Record<string, unknown>[] | undefined) ?? []
+  const clinicData: Record<string, unknown>[] = (clinicQuery.data as Record<string, unknown>[] | undefined) ?? []
 
   return (
     <div className="grid gap-6">
@@ -148,15 +148,15 @@ export function AnalyticsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E0" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#A0A09A" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#A0A09A" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#A0A09A" }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{ borderRadius: "12px", border: "1px solid #E5E5E0", fontSize: 12 }}
                   labelStyle={{ fontWeight: 600, color: "#111110" }}
                 />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
-                <Area type="monotone" dataKey="attended" name="มาตามนัด" stroke="#16A34A" strokeWidth={2} fill="url(#attended-grad)" dot={false} />
-                <Area type="monotone" dataKey="noShow" name="ขาดนัด" stroke="#DC2626" strokeWidth={2} fill="url(#noshow-grad)" dot={false} />
+                <Area type="monotone" dataKey="total" name="ทั้งหมด" stroke="#16A34A" strokeWidth={2} fill="url(#attended-grad)" dot={false} />
+                <Area type="monotone" dataKey="count" name="ขาดนัด" stroke="#DC2626" strokeWidth={2} fill="url(#noshow-grad)" dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           )}
@@ -176,7 +176,7 @@ export function AnalyticsPage() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={clinicData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E0" vertical={false} />
-                <XAxis dataKey="clinicName" tick={{ fontSize: 10, fill: "#A0A09A" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#A0A09A" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#A0A09A" }} axisLine={false} tickLine={false} />
                 <Tooltip
                   contentStyle={{ borderRadius: "12px", border: "1px solid #E5E5E0", fontSize: 12 }}

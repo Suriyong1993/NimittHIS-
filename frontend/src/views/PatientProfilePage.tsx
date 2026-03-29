@@ -60,7 +60,7 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
 
   const patient = patientQuery.data as Record<string, unknown> | null
   const stats = statsQuery.data as Record<string, unknown> | null
-  const timeline: Record<string, unknown>[] = timelineQuery.data?.items ?? []
+  const timeline: Record<string, unknown>[] = (timelineQuery.data as { data?: Record<string, unknown>[] } | undefined)?.data ?? []
 
   if (patientQuery.isLoading) {
     return (
