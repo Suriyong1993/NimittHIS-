@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss"
 
 export default {
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./src/**/*.{ts,tsx}", "./src/app/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -25,8 +25,8 @@ export default {
         "nimitt-teal-bg": "#ECFEFF"
       },
       fontFamily: {
-        thai: ["Sarabun", "sans-serif"],
-        mono: ["IBM Plex Mono", "monospace"]
+        thai: ["var(--font-thai)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"]
       },
       boxShadow: {
         panel: "0 18px 50px rgba(17,17,16,0.08)"

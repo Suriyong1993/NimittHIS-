@@ -1,7 +1,10 @@
+"use client"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 import { z } from "zod"
 
 import { Button } from "../components/ui/Button"
@@ -16,8 +19,11 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 
 export function LoginPage() {
-  const navigate = useNavigate()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const loginAction = useAuthStore((state) => state.loginAction)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const nextPath = searchParams?.get("next") || "/dashboard"
 
   const { register, handleSubmit, formState } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -29,8 +35,14 @@ export function LoginPage() {
 
   const mutation = useMutation({
     mutationFn: loginAction,
-    onSuccess: () => navigate("/dashboard")
+    onSuccess: () => router.replace(nextPath)
   })
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(nextPath)
+    }
+  }, [isAuthenticated, nextPath, router])
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-nimitt-bg px-4 py-8">

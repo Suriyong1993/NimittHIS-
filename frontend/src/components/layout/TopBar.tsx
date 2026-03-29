@@ -1,10 +1,12 @@
-import { useNavigate } from "react-router-dom"
+"use client"
+
+import { useRouter } from "next/navigation"
 
 import { useAuthStore } from "../../store/authStore"
 import { Button } from "../ui/Button"
 
 export function TopBar() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { user, logout } = useAuthStore()
 
   return (
@@ -25,7 +27,7 @@ export function TopBar() {
           variant="secondary"
           onClick={async () => {
             await logout()
-            navigate("/login")
+            router.replace("/login")
           }}
         >
           ออกจากระบบ

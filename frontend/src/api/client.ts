@@ -1,15 +1,16 @@
 import axios, { AxiosError } from "axios"
 
-import { supabase } from "../lib/supabase"
+import { getSupabaseClient } from "../lib/supabase"
 import { useAuthStore } from "../store/authStore"
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3001/api"
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? process.env.VITE_API_URL ?? "http://localhost:3001/api"
 })
 
 let refreshPromise: Promise<string | null> | null = null
 
 apiClient.interceptors.request.use(async (config) => {
+  const supabase = getSupabaseClient()
   const {
     data: { session }
   } = await supabase.auth.getSession()
@@ -34,6 +35,7 @@ apiClient.interceptors.response.use(
     }
 
     if (!refreshPromise) {
+      const supabase = getSupabaseClient()
       refreshPromise = supabase.auth
         .refreshSession()
         .then(({ data }) => data.session?.access_token ?? null)

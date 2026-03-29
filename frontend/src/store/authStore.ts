@@ -1,14 +1,17 @@
 import { create } from "zustand"
+import type { AuthChangeEvent, User } from "@supabase/supabase-js"
 
 import type { AuthUser, LoginPayload } from "../api/auth"
-import { supabase } from "../lib/supabase"
+import { getSupabaseClient } from "../lib/supabase"
 
 interface AuthState {
   user: AuthUser | null
   isAuthenticated: boolean
   isBootstrapping: boolean
+  isReady: boolean
   loginAction: (payload: LoginPayload) => Promise<void>
   bootstrap: () => Promise<void>
+  syncSession: (event: AuthChangeEvent, user: User | null) => void
   logout: () => Promise<void>
 }
 
@@ -26,7 +29,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isBootstrapping: true,
+  isReady: false,
   async loginAction(payload) {
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase.auth.signInWithPassword({
       email: payload.email,
       password: payload.password
@@ -38,17 +43,21 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     set({
       user: mapUser(data.user),
-      isAuthenticated: true
+      isAuthenticated: true,
+      isBootstrapping: false,
+      isReady: true
     })
   },
   async bootstrap() {
+    const supabase = getSupabaseClient()
     const { data } = await supabase.auth.getSession()
 
     if (!data.session?.user) {
       set({
         user: null,
         isAuthenticated: false,
-        isBootstrapping: false
+        isBootstrapping: false,
+        isReady: true
       })
       return
     }
@@ -56,15 +65,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user: mapUser(data.session.user),
       isAuthenticated: true,
-      isBootstrapping: false
+      isBootstrapping: false,
+      isReady: true
+    })
+  },
+  syncSession(_event, user) {
+    set({
+      user: user ? mapUser(user) : null,
+      isAuthenticated: Boolean(user),
+      isBootstrapping: false,
+      isReady: true
     })
   },
   async logout() {
+    const supabase = getSupabaseClient()
     await supabase.auth.signOut()
     set({
       user: null,
       isAuthenticated: false,
-      isBootstrapping: false
+      isBootstrapping: false,
+      isReady: true
     })
   }
 }))

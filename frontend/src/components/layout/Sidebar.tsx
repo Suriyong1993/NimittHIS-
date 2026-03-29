@@ -1,4 +1,7 @@
-import { NavLink } from "react-router-dom"
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 const menu = [
   { to: "/dashboard", label: "แดชบอร์ด" },
@@ -8,6 +11,8 @@ const menu = [
 ]
 
 export function Sidebar() {
+  const pathname = usePathname()
+
   return (
     <aside className="flex h-full w-full flex-col rounded-[28px] border border-white/40 bg-[#111110] p-5 text-white shadow-panel">
       <div className="mb-8">
@@ -18,17 +23,15 @@ export function Sidebar() {
 
       <nav className="flex flex-1 flex-col gap-2">
         {menu.map((item) => (
-          <NavLink
+          <Link
             key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `rounded-2xl px-4 py-3 text-sm font-medium transition ${
-                isActive ? "bg-white text-nimitt-ink" : "text-white/75 hover:bg-white/10 hover:text-white"
-              }`
-            }
+            href={item.to}
+            className={`rounded-2xl px-4 py-3 text-sm font-medium transition ${
+              pathname === item.to ? "bg-white text-nimitt-ink" : "text-white/75 hover:bg-white/10 hover:text-white"
+            }`}
           >
             {item.label}
-          </NavLink>
+          </Link>
         ))}
       </nav>
 
