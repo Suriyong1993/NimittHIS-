@@ -45,7 +45,17 @@ export async function sendTomorrowReminders() {
 }
 
 export function startNotificationScheduler() {
+  // Check for overdue appointments and mark them as NO_SHOW every 15 minutes
   cron.schedule("*/15 * * * *", async () => {
+    try {
+      // Call the SQL function that handles status updates, score recalculation, and risk escalation
+      await prisma.$executeRaw`SELECT public.check_overdue_appointments()`
+      console.log("[Scheduler] Successfully checked overdue appointments and updated no-show statuses.")
+    } catch (error) {
+      console.error("[Scheduler] Error checking overdue appointments:", error)
+    }
+
+    // Original overdue flag logic for reporting
     const twoHoursAgo = subHours(new Date(), 2)
     await prisma.appointment.updateMany({
       where: {
@@ -59,6 +69,7 @@ export function startNotificationScheduler() {
     })
   })
 
+  // Send reminders for tomorrow's appointments at 8:00 AM
   cron.schedule("0 8 * * *", async () => {
     await sendTomorrowReminders()
   })

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindCare — Design System Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design Tokens ─────────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0d0f1a;
+      --surface:   #111827;
+      --glass:     rgba(255,255,255,0.05);
+      --primary:   #a78bfa;
+      --violet:    #7c3aed;
+      --secondary: #2dd4bf;
+      --accent:    #fb923c;
+      --danger:    #f43f5e;
+      --success:   #10b981;
+      --ink:       #f1f5f9;
+      --muted:     #94a3b8;
+      --faint:     #64748b;
+      --border:    rgba(167,139,250,0.20);
+
+      --font-display: 'Rajdhani', sans-serif;
+      --font-body:    'Sarabun', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+
+      --glow-lavender: 0 0 32px rgba(167,139,250,0.30);
+      --glow-teal:     0 0 32px rgba(45,212,191,0.25);
+      --glow-violet:   0 0 48px rgba(124,58,237,0.35);
+      --glow-rose:     0 0 24px rgba(244,63,94,0.30);
+      --glow-mint:     0 0 24px rgba(16,185,129,0.30);
+    }
+
+    /* ─── Page wrapper — desktop centering ──────────────────────────────────── */
+    body {
+      background: #070810;
+      font-family: var(--font-body);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Phone frame ───────────────────────────────────────────────────────── */
+    .phone-frame {
+      width: 390px;
+      min-height: 844px;
+      background: var(--bg);
+      border-radius: 44px;
+      border: 1px solid rgba(167,139,250,0.25);
+      box-shadow: 0 40px 100px rgba(13,15,26,0.9), var(--glow-lavender);
+      overflow: hidden;
+      position: relative;
+      background-image:
+        radial-gradient(ellipse at 15% 10%,  rgba(124,58,237,0.22) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 90%,  rgba(45,212,191,0.14) 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 50%,  rgba(167,139,250,0.06) 0%, transparent 60%);
+    }
+
+    /* Notch */
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #070810;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    .phone-content {
+      padding: 68px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ─── Section headings ──────────────────────────────────────────────────── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 10px;
+    }
+
+    /* ─── Header / Brand ────────────────────────────────────────────────────── */
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brand-row { display: flex; align-items: center; gap: 10px; }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+      box-shadow: var(--glow-lavender);
+      display: flex; align-items: center; justify-content: center;
+      animation: glow-pulse 3s ease-in-out infinite;
+    }
+
+    .brand-slug {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: rgba(167,139,250,0.55);
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f1f5f9 0%, #a78bfa 70%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: rgba(148,163,184,0.7);
+      font-weight: 400;
+    }
+
+    /* ─── Divider ───────────────────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: rgba(167,139,250,0.12);
+    }
+
+    /* ─── Color Palette ─────────────────────────────────────────────────────── */
+    .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+    .swatch {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .swatch-dot {
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .swatch-name {
+      font-family: var(--font-mono);
+      font-size: 7px;
+      color: var(--faint);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ─── Mood Ring ─────────────────────────────────────────────────────────── */
+    .mood-row {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .mood-chip {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 4px;
+      border-radius: 16px;
+      font-size: 9px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid;
+      transition: transform 0.2s;
+      cursor: default;
+    }
+    .mood-chip:hover { transform: translateY(-3px); }
+
+    .mood-dot { width: 22px; height: 22px; border-radius: 50%; }
+
+    /* ─── Typography Scale ──────────────────────────────────────────────────── */
+    .type-stack { display: flex; flex-direction: column; gap: 10px; }
+
+    .type-sample { display: flex; flex-direction: column; gap: 2px; }
+    .type-meta {
+      font-family: var(--font-mono);
+      font-size: 8px;
+      color: var(--faint);
+    }
+
+    .t-display { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; color: var(--ink); letter-spacing: 0.02em; }
+    .t-h1      { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--ink); }
+    .t-h2      { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink); }
+    .t-body    { font-family: var(--font-body);    font-size: 14px; color: var(--ink); }
+    .t-caption { font-family: var(--font-body);    font-size: 11px; color: var(--muted); }
+    .t-mono    { font-family: var(--font-mono);    font-size: 12px; color: var(--secondary); }
+
+    /* ─── Glass Card ────────────────────────────────────────────────────────── */
+    .glass-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px) saturate(110%);
+      border: 1px solid rgba(167,139,250,0.14);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: 0 18px 50px rgba(13,15,26,0.5);
+    }
+
+    /* ─── Stat Card ─────────────────────────────────────────────────────────── */
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .stat-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(167,139,250,0.14);
+      border-radius: 20px;
+      padding: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 24px 64px rgba(13,15,26,0.7), var(--glow-lavender);
+    }
+
+    .stat-icon {
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ─── Buttons ───────────────────────────────────────────────────────────── */
+    .btn-grid { display: flex; flex-direction: column; gap: 8px; }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 16px;
+      padding: 12px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: scale(1.02); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+      color: #fff;
+      box-shadow: var(--glow-lavender);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--ink);
+      border: 1px solid rgba(167,139,250,0.25);
+    }
+    .btn-teal {
+      background: rgba(45,212,191,0.14);
+      color: var(--secondary);
+      border: 1px solid rgba(45,212,191,0.30);
+      box-shadow: var(--glow-teal);
+    }
+    .btn-danger {
+      background: rgba(244,63,94,0.13);
+      color: var(--danger);
+      border: 1px solid rgba(244,63,94,0.30);
+    }
+
+    /* ─── Badges ────────────────────────────────────────────────────────────── */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .b-lavender { background: rgba(167,139,250,0.12); color: #a78bfa; border-color: rgba(167,139,250,0.28); }
+    .b-teal     { background: rgba(45,212,191,0.12);  color: #2dd4bf; border-color: rgba(45,212,191,0.28); }
+    .b-rose     { background: rgba(244,63,94,0.12);   color: #f43f5e; border-color: rgba(244,63,94,0.28); }
+    .b-peach    { background: rgba(251,146,60,0.12);  color: #fb923c; border-color: rgba(251,146,60,0.28); }
+    .b-mint     { background: rgba(16,185,129,0.12);  color: #10b981; border-color: rgba(16,185,129,0.28); }
+    .b-gold     { background: rgba(251,191,36,0.12);  color: #fbbf24; border-color: rgba(251,191,36,0.28); }
+
+    /* ─── Input Field ───────────────────────────────────────────────────────── */
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(167,139,250,0.22);
+      border-radius: 16px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .input:focus {
+      border-color: rgba(167,139,250,0.55);
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.12);
+      background: rgba(167,139,250,0.06);
+    }
+    .input::placeholder { color: var(--faint); }
+
+    /* ─── Patient List Item ─────────────────────────────────────────────────── */
+    .patient-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(167,139,250,0.10);
+      background: rgba(255,255,255,0.03);
+      transition: background 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .patient-item:hover {
+      background: rgba(167,139,250,0.07);
+      transform: translateX(3px);
+    }
+
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .patient-info { flex: 1; min-width: 0; }
+    .patient-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--ink); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .patient-sub {
+      font-size: 11px; color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ─── Nav bar ───────────────────────────────────────────────────────────── */
+    .nav-bar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(13,15,26,0.85);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(167,139,250,0.14);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 18px;
+      margin: 0 -20px -28px;
+    }
+
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; font-size: 9px; color: var(--faint);
+      padding: 2px 8px;
+      cursor: default;
+      transition: color 0.2s;
+    }
+    .nav-item.active { color: var(--primary); }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-active-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 6px rgba(167,139,250,0.8);
+    }
+
+    /* ─── Animations ────────────────────────────────────────────────────────── */
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(167,139,250,0.20); }
+      50%       { box-shadow: 0 0 40px rgba(167,139,250,0.45); }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-5px); }
+    }
+
+    .fade-in { animation: fade-in 0.5s ease both; }
+    .float   { animation: float 4s ease-in-out infinite; }
+
+    .delay-1 { animation-delay: 80ms; }
+    .delay-2 { animation-delay: 160ms; }
+    .delay-3 { animation-delay: 240ms; }
+    .delay-4 { animation-delay: 320ms; }
+
+    /* ─── Right panel (full page samples) ──────────────────────────────────── */
+    .page-samples {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .page-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--faint);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .mini-page {
+      width: 200px;
+      background: var(--surface);
+      border: 1px solid rgba(167,139,250,0.18);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(13,15,26,0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- PHONE FRAME — Design System Showcase                                   -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="phone-frame fade-in">
+    <div class="phone-content">
+
+      <!-- ── Brand ─────────────────────────────────────────────────── -->
+      <div class="brand-block fade-in">
+        <div class="brand-row">
+          <div class="logo-icon float">
+            <!-- EKG icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <span class="brand-slug">NimittHIS</span>
+        </div>
+        <div class="brand-title">MindCare</div>
+        <div class="brand-sub">ระบบติดตามนัดหมายสุขภาพจิต · Thai Hospital</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ── Color Palette ──────────────────────────────────────────── -->
+      <div class="fade-in delay-1">
+        <div class="section-label">// color palette</div>
+        <div class="palette-grid">
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#0d0f1a;border:1px solid rgba(167,139,250,0.3)"></div>
+            <div class="swatch-name">bg<br/>#0d0f1a</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border-color:rgba(167,139,250,0.25)"></div>
+            <div class="swatch-name">glass<br/>5%</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 0 16px rgba(167,139,250,0.4)"></div>
+            <div class="swatch-name">primary<br/>lavender</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#2dd4bf;box-shadow:0 0 12px rgba(45,212,191,0.4)"></div>
+            <div class="swatch-name">teal<br/>#2dd4bf</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#fb923c;box-shadow:0 0 12px rgba(251,146,60,0.3)"></div>
+            <div class="swatch-name">peach<br/>#fb923c</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#f43f5e;box-shadow:0 0 12px rgba(244,63,94,0.4)"></div>
+            <div class="swatch-name">danger<br/>#f43f5e</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#10b981;box-shadow:0 0 12px rgba(16,185,129,0.4)"></div>
+            <div class="swatch-name">success<br/>#10b981</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#f1f5f9"></div>
+            <div class="swatch-name">ink<br/>#f1f5f9</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:#94a3b8"></div>
+            <div class="swatch-name">muted<br/>#94a3b8</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-dot" style="background:rgba(167,139,250,0.20);border:1px solid rgba(167,139,250,0.5)"></div>
+            <div class="swatch-name">border<br/>20%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Mood Colors ─────────────────────────────────────────────── -->
+      <div class="fade-in delay-2">
+        <div class="section-label">// mood / emotion states</div>
+        <div class="mood-row">
+          <div class="mood-chip" style="background:rgba(251,191,36,0.10);border-color:rgba(251,191,36,0.30);color:#fbbf24">
+            <div class="mood-dot" style="background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,0.6)"></div>
+            ดีมาก
+          </div>
+          <div class="mood-chip" style="background:rgba(52,211,153,0.10);border-color:rgba(52,211,153,0.30);color:#34d399">
+            <div class="mood-dot" style="background:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.6)"></div>
+            ดี
+          </div>
+          <div class="mood-chip" style="background:rgba(96,165,250,0.10);border-color:rgba(96,165,250,0.30);color:#60a5fa">
+            <div class="mood-dot" style="background:#60a5fa;box-shadow:0 0 8px rgba(96,165,250,0.6)"></div>
+            ปานกลาง
+          </div>
+          <div class="mood-chip" style="background:rgba(249,115,22,0.10);border-color:rgba(249,115,22,0.30);color:#f97316">
+            <div class="mood-dot" style="background:#f97316;box-shadow:0 0 8px rgba(249,115,22,0.6)"></div>
+            ไม่ดี
+          </div>
+          <div class="mood-chip" style="background:rgba(244,63,94,0.10);border-color:rgba(244,63,94,0.30);color:#f43f5e">
+            <div class="mood-dot" style="background:#f43f5e;box-shadow:0 0 8px rgba(244,63,94,0.6)"></div>
+            แย่มาก
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Typography ─────────────────────────────────────────────── -->
+      <div class="fade-in delay-2">
+        <div class="section-label">// typography</div>
+        <div class="glass-card" style="padding:14px 16px;">
+          <div class="type-stack">
+            <div class="type-sample">
+              <div class="type-meta">Rajdhani 700 · Display</div>
+              <div class="t-display">MindCare</div>
+            </div>
+            <div class="divider"></div>
+            <div class="type-sample">
+              <div class="type-meta">Rajdhani 700 · H1</div>
+              <div class="t-h1">ระบบนัดหมาย</div>
+            </div>
+            <div class="type-sample">
+              <div class="type-meta">Rajdhani 600 · H2</div>
+              <div class="t-h2">Dashboard</div>
+            </div>
+            <div class="divider"></div>
+            <div class="type-sample">
+              <div class="type-meta">Sarabun 400 · Body 14px</div>
+              <div class="t-body">ผู้ป่วยนัดหมายวันนี้ทั้งหมด 24 ราย</div>
+            </div>
+            <div class="type-sample">
+              <div class="type-meta">Sarabun 400 · Caption 11px</div>
+              <div class="t-caption">อัปเดตเมื่อ 09:30 · ข้อมูลจากระบบ</div>
+            </div>
+            <div class="divider"></div>
+            <div class="type-sample">
+              <div class="type-meta">JetBrains Mono · Data</div>
+              <div class="t-mono">HN 0012345 · noshow: 0.87</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Stat Cards ─────────────────────────────────────────────── -->
+      <div class="fade-in delay-3">
+        <div class="section-label">// stat cards · glassmorphism</div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(167,139,250,0.14)">📅</div>
+            <div class="stat-value" style="color:#a78bfa">24</div>
+            <div class="stat-label">นัดวันนี้</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(16,185,129,0.14)">✓</div>
+            <div class="stat-value" style="color:#10b981">18</div>
+            <div class="stat-label">มาตามนัด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(244,63,94,0.14)">✕</div>
+            <div class="stat-value" style="color:#f43f5e">4</div>
+            <div class="stat-label">ขาดนัด</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(251,146,60,0.14)">⏳</div>
+            <div class="stat-value" style="color:#fb923c">2</div>
+            <div class="stat-label">รอดำเนินการ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Buttons ────────────────────────────────────────────────── -->
+      <div class="fade-in delay-3">
+        <div class="section-label">// buttons</div>
+        <div class="btn-grid">
+          <button class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            เข้าสู่ระบบ · Primary
+          </button>
+          <button class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ดูนัดหมาย · Secondary
+          </button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-teal" style="padding:10px">✓ ยืนยัน</button>
+            <button class="btn btn-danger" style="padding:10px">✕ ขาดนัด</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Badges ─────────────────────────────────────────────────── -->
+      <div class="fade-in delay-3">
+        <div class="section-label">// badges · pills</div>
+        <div class="badge-row">
+          <span class="badge b-lavender"><span class="badge-dot" style="background:#a78bfa"></span>นัดแล้ว</span>
+          <span class="badge b-teal"><span class="badge-dot" style="background:#2dd4bf"></span>ยืนยัน</span>
+          <span class="badge b-mint"><span class="badge-dot" style="background:#10b981"></span>มาแล้ว</span>
+          <span class="badge b-rose"><span class="badge-dot" style="background:#f43f5e"></span>ขาดนัด</span>
+          <span class="badge b-peach"><span class="badge-dot" style="background:#fb923c"></span>เลื่อนนัด</span>
+          <span class="badge b-gold"><span class="badge-dot" style="background:#fbbf24"></span>เสี่ยงสูง</span>
+        </div>
+      </div>
+
+      <!-- ── Input ──────────────────────────────────────────────────── -->
+      <div class="fade-in delay-4">
+        <div class="section-label">// input field</div>
+        <input class="input" type="text" placeholder="ค้นหาชื่อผู้ป่วย หรือ HN..." />
+      </div>
+
+      <!-- ── Patient List ────────────────────────────────────────────  -->
+      <div class="fade-in delay-4">
+        <div class="section-label">// patient list item</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="patient-item">
+            <div class="avatar" style="background:rgba(244,63,94,0.18);color:#f43f5e">ส</div>
+            <div class="patient-info">
+              <div class="patient-name">สมชาย ใจดี</div>
+              <div class="patient-sub" style="font-family:var(--font-mono);font-size:10px">HN 001234 · ขาดนัด 5 ครั้ง</div>
+            </div>
+            <span class="badge b-rose" style="font-size:10px">เสี่ยงสูง</span>
+          </div>
+          <div class="patient-item">
+            <div class="avatar" style="background:rgba(167,139,250,0.18);color:#a78bfa">ว</div>
+            <div class="patient-info">
+              <div class="patient-name">วารี สุขใจ</div>
+              <div class="patient-sub" style="font-family:var(--font-mono);font-size:10px">HN 005678 · ขาดนัด 1 ครั้ง</div>
+            </div>
+            <span class="badge b-mint" style="font-size:10px">ต่ำ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Glow / Shadow showcase ─────────────────────────────────── -->
+      <div class="fade-in delay-4">
+        <div class="section-label">// glow + shadow tokens</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="height:52px;border-radius:16px;background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.30);box-shadow:0 0 32px rgba(167,139,250,0.30);display:flex;align-items:center;justify-content:center;font-size:9px;color:#a78bfa;font-family:var(--font-mono)">lavender</div>
+          <div style="height:52px;border-radius:16px;background:rgba(45,212,191,0.10);border:1px solid rgba(45,212,191,0.30);box-shadow:0 0 32px rgba(45,212,191,0.25);display:flex;align-items:center;justify-content:center;font-size:9px;color:#2dd4bf;font-family:var(--font-mono)">teal</div>
+          <div style="height:52px;border-radius:16px;background:rgba(124,58,237,0.10);border:1px solid rgba(124,58,237,0.35);box-shadow:0 0 48px rgba(124,58,237,0.35);display:flex;align-items:center;justify-content:center;font-size:9px;color:#a78bfa;font-family:var(--font-mono)">violet</div>
+        </div>
+      </div>
+
+      <!-- ── Bottom Navigation ──────────────────────────────────────── -->
+      <div class="nav-bar">
+        <div class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <div class="nav-active-dot"></div>
+          แดชบอร์ด
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          นัดหมาย
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          ขาดนัด
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          วิเคราะห์
+        </div>
+      </div>
+
+    </div><!-- /phone-content -->
+  </div><!-- /phone-frame -->
+
+</body>
+</html>

@@ -1,201 +1,231 @@
-create extension if not exists pgcrypto;
-
-create type public.role as enum (
-  'NURSE',
-  'DOCTOR',
-  'MANAGER',
-  'ADMIN'
+-- ============ ENUMS ============
+CREATE TYPE role AS ENUM (
+  'ADMIN','DOCTOR','NURSE','PSYCHOLOGIST','PATIENT'
 );
 
-create type public.appointment_status as enum (
-  'SCHEDULED',
-  'CONFIRMED',
-  'ATTENDED',
-  'NO_SHOW',
-  'CANCELLED',
-  'RESCHEDULED'
+CREATE TYPE appointment_status AS ENUM (
+  'SCHEDULED','CONFIRMED','ATTENDED',
+  'NO_SHOW','CANCELLED','RESCHEDULED'
 );
 
-create type public.timeline_type as enum (
-  'ATTENDED',
-  'NO_SHOW',
-  'RESCHEDULED',
-  'PHONE_FOLLOWUP',
-  'NOTE',
-  'LAB_ORDER',
-  'XRAY_ORDER',
-  'SURGERY',
-  'ALLERGY',
-  'MEDICATION'
+CREATE TYPE risk_level AS ENUM ('LOW','MEDIUM','HIGH','CRITICAL');
+
+CREATE TYPE mood_level AS ENUM ('1','2','3','4','5');
+
+CREATE TYPE notification_channel AS ENUM ('PUSH','SMS','LINE','EMAIL');
+
+CREATE TYPE followup_type AS ENUM (
+  'PHONE_CALL','SMS','LINE','EMAIL','HOME_VISIT','EMERGENCY'
 );
 
-create type public.no_show_reason as enum (
-  'FORGOT',
-  'SICK',
-  'TRANSPORTATION',
-  'FINANCIAL',
-  'NO_ANSWER',
-  'OTHER'
+CREATE TYPE no_show_reason AS ENUM (
+  'FORGOT','SICK','TRANSPORTATION',
+  'FINANCIAL','NO_ANSWER','FAMILY','OTHER'
 );
 
-create type public.risk_level as enum (
-  'LOW',
-  'MEDIUM',
-  'HIGH'
+-- ============ CORE TABLES ============
+
+-- Clinics / Departments
+CREATE TABLE clinics (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        TEXT NOT NULL,       -- "คลินิกจิตเวช"
+  description TEXT,
+  location    TEXT,
+  is_active   BOOLEAN DEFAULT true,
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
 );
 
-create or replace function public.set_updated_at()
-returns trigger
-language plpgsql
-as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
-
-create table if not exists public.users (
-  id text primary key default gen_random_uuid()::text,
-  username text not null unique,
-  password_hash text not null,
-  first_name text not null,
-  last_name text not null,
-  role public.role not null,
-  clinic_id text,
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+-- Users (staff)
+CREATE TABLE users (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT UNIQUE NOT NULL,
+  first_name    TEXT NOT NULL,
+  last_name     TEXT NOT NULL,
+  role          role NOT NULL,
+  phone         TEXT,
+  avatar_url    TEXT,
+  license_no    TEXT,              -- เลขใบประกอบวิชาชีพ
+  specialty     TEXT,              -- สาขาเฉพาะทาง
+  clinic_id     UUID REFERENCES clinics(id),
+  is_active     BOOLEAN DEFAULT true,
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
 );
 
-create index if not exists users_username_idx on public.users (username);
-
-create table if not exists public.patients (
-  id text primary key default gen_random_uuid()::text,
-  hn text not null unique,
-  first_name text not null,
-  last_name text not null,
-  date_of_birth timestamptz not null,
-  gender text not null,
-  blood_type text,
-  phone text,
-  id_card text unique,
-  passport_no text,
-  insurance_type text,
-  allergies text[] not null default '{}',
-  total_appointments integer not null default 0,
-  total_attended integer not null default 0,
-  total_no_shows integer not null default 0,
-  no_show_score double precision not null default 0,
-  risk_level public.risk_level not null default 'LOW',
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+-- Patients
+CREATE TABLE patients (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hn                TEXT UNIQUE NOT NULL,  -- auto-generated
+  first_name        TEXT NOT NULL,
+  last_name         TEXT NOT NULL,
+  date_of_birth     DATE NOT NULL,
+  gender            TEXT NOT NULL,
+  phone             TEXT,
+  email             TEXT,
+  address           TEXT,
+  emergency_contact_name  TEXT,
+  emergency_contact_phone TEXT,
+  primary_doctor_id UUID REFERENCES users(id),
+  risk_level        risk_level DEFAULT 'LOW',
+  no_show_score     INT DEFAULT 0,         -- 0-100
+  is_active         BOOLEAN DEFAULT true,
+  created_at        TIMESTAMPTZ DEFAULT now(),
+  updated_at        TIMESTAMPTZ DEFAULT now()
 );
 
-create index if not exists patients_hn_idx on public.patients (hn);
-create index if not exists patients_name_idx on public.patients (first_name, last_name);
-create index if not exists patients_risk_level_idx on public.patients (risk_level);
-
-create table if not exists public.clinics (
-  id text primary key default gen_random_uuid()::text,
-  name text not null,
-  name_en text,
-  is_active boolean not null default true
+-- Diagnoses
+CREATE TABLE diagnoses (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id  UUID REFERENCES patients(id) ON DELETE CASCADE,
+  icd10_code  TEXT,                -- F32.1 etc.
+  name        TEXT NOT NULL,       -- "โรคซึมเศร้า"
+  severity    TEXT,
+  noted_by    UUID REFERENCES users(id),
+  noted_at    TIMESTAMPTZ DEFAULT now(),
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
 );
 
-create table if not exists public.rooms (
-  id text primary key default gen_random_uuid()::text,
-  name text not null,
-  clinic_id text not null references public.clinics(id) on delete restrict
+-- Appointments
+CREATE TABLE appointments (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id      UUID REFERENCES patients(id) ON DELETE CASCADE,
+  doctor_id       UUID REFERENCES users(id),
+  clinic_id       UUID REFERENCES clinics(id),
+  scheduled_at    TIMESTAMPTZ NOT NULL,
+  duration_min    INT DEFAULT 50,
+  status          appointment_status DEFAULT 'SCHEDULED',
+  type            TEXT DEFAULT 'IN_PERSON', -- IN_PERSON/ONLINE/PHONE
+  no_show_reason  no_show_reason,
+  notes           TEXT,
+  created_by      UUID REFERENCES users(id),
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now()
 );
 
-create table if not exists public.doctors (
-  id text primary key default gen_random_uuid()::text,
-  prefix text not null,
-  first_name text not null,
-  last_name text not null,
-  specialty text,
-  clinic_id text,
-  is_active boolean not null default true
+-- Follow-up Actions (เมื่อผู้ป่วยขาดนัด)
+CREATE TABLE followup_actions (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  appointment_id  UUID REFERENCES appointments(id),
+  patient_id      UUID REFERENCES patients(id),
+  type            followup_type NOT NULL,
+  performed_by    UUID REFERENCES users(id),
+  result          TEXT,            -- "ติดต่อได้ / ไม่รับสาย / นัดใหม่แล้ว"
+  notes           TEXT,
+  performed_at    TIMESTAMPTZ DEFAULT now(),
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
 );
 
-create table if not exists public.appointments (
-  id text primary key default gen_random_uuid()::text,
-  patient_id text not null references public.patients(id) on delete restrict,
-  clinic_id text not null references public.clinics(id) on delete restrict,
-  doctor_id text references public.doctors(id) on delete set null,
-  room_id text references public.rooms(id) on delete set null,
-  created_by text not null references public.users(id) on delete restrict,
-  appointment_date timestamptz not null,
-  time_from text not null,
-  time_to text not null,
-  reason text not null,
-  notes text,
-  status public.appointment_status not null default 'SCHEDULED',
-  no_show_reason public.no_show_reason,
-  contact_attempts integer not null default 0,
-  confirmed_at timestamptz,
-  attended_at timestamptz,
-  cancelled_at timestamptz,
-  overdue_flag boolean not null default false,
-  sms_reminder_sent boolean not null default false,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+-- Mood Logs (Patient)
+CREATE TABLE mood_logs (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id    UUID REFERENCES patients(id) ON DELETE CASCADE,
+  mood          mood_level NOT NULL,   -- 1=แย่มาก 5=ดีมาก
+  intensity     INT CHECK (intensity BETWEEN 1 AND 10),
+  emotions      TEXT[],               -- ['วิตกกังวล','เหนื่อย']
+  sleep_hours   DECIMAL(3,1),
+  exercised     BOOLEAN DEFAULT false,
+  exercise_min  INT,
+  note          TEXT,
+  is_private    BOOLEAN DEFAULT false,
+  logged_at     TIMESTAMPTZ DEFAULT now(),
+  created_at    TIMESTAMPTZ DEFAULT now()
 );
 
-create index if not exists appointments_patient_id_idx on public.appointments (patient_id);
-create index if not exists appointments_appointment_date_idx on public.appointments (appointment_date);
-create index if not exists appointments_status_idx on public.appointments (status);
-create index if not exists appointments_overdue_flag_idx on public.appointments (overdue_flag);
-
-create table if not exists public.timeline_entries (
-  id text primary key default gen_random_uuid()::text,
-  patient_id text not null references public.patients(id) on delete cascade,
-  appointment_id text references public.appointments(id) on delete set null,
-  created_by_id text not null references public.users(id) on delete restrict,
-  type public.timeline_type not null,
-  entry_date timestamptz not null,
-  clinic_name text,
-  doctor_name text,
-  notes text,
-  no_show_reason public.no_show_reason,
-  original_created_at timestamptz not null default now(),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  last_edited_by text,
-  last_edited_at timestamptz
+-- Journal Entries (Patient diary)
+CREATE TABLE journal_entries (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id  UUID REFERENCES patients(id) ON DELETE CASCADE,
+  title       TEXT,
+  body        TEXT NOT NULL,
+  mood        mood_level,
+  emotions    TEXT[],
+  is_private  BOOLEAN DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  updated_at  TIMESTAMPTZ DEFAULT now()
 );
 
-create index if not exists timeline_entries_patient_id_idx on public.timeline_entries (patient_id);
-create index if not exists timeline_entries_entry_date_idx on public.timeline_entries (entry_date);
+-- Assessments (PHQ-9, GAD-7 etc.)
+CREATE TABLE assessments (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id  UUID REFERENCES patients(id),
+  type        TEXT NOT NULL,        -- 'PHQ9','GAD7','AUDIT'
+  answers     JSONB NOT NULL,       -- {q1:2, q2:1, ...}
+  score       INT NOT NULL,
+  severity    TEXT NOT NULL,        -- 'minimal','mild','moderate','severe'
+  taken_by    UUID REFERENCES users(id),
+  taken_at    TIMESTAMPTZ DEFAULT now(),
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
 
-drop trigger if exists set_users_updated_at on public.users;
-create trigger set_users_updated_at
-before update on public.users
-for each row
-execute function public.set_updated_at();
+-- Medications
+CREATE TABLE medications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id  UUID REFERENCES patients(id),
+  drug_name   TEXT NOT NULL,
+  dosage      TEXT NOT NULL,
+  frequency   TEXT NOT NULL,
+  prescribed_by UUID REFERENCES users(id),
+  start_date  DATE NOT NULL,
+  end_date    DATE,
+  is_active   BOOLEAN DEFAULT true,
+  notes       TEXT,
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
+);
 
-drop trigger if exists set_patients_updated_at on public.patients;
-create trigger set_patients_updated_at
-before update on public.patients
-for each row
-execute function public.set_updated_at();
+-- Notifications
+CREATE TABLE notifications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id  UUID REFERENCES patients(id),
+  type        TEXT NOT NULL,        -- 'REMINDER','NO_SHOW','FOLLOWUP'
+  channel     notification_channel NOT NULL,
+  title       TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  sent_at     TIMESTAMPTZ,
+  read_at     TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
 
-drop trigger if exists set_appointments_updated_at on public.appointments;
-create trigger set_appointments_updated_at
-before update on public.appointments
-for each row
-execute function public.set_updated_at();
+-- Patient Risk Score History
+CREATE TABLE risk_score_history (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id      UUID REFERENCES patients(id),
+  score           INT NOT NULL,     -- 0-100
+  factors         JSONB,            -- {no_show_count:3, severity:'HIGH'}
+  calculated_at   TIMESTAMPTZ DEFAULT now(),
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
 
-drop trigger if exists set_timeline_entries_updated_at on public.timeline_entries;
-create trigger set_timeline_entries_updated_at
-before update on public.timeline_entries
-for each row
-execute function public.set_updated_at();
+-- Audit Log
+CREATE TABLE audit_logs (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES users(id),
+  action      TEXT NOT NULL,        -- 'CREATE','UPDATE','DELETE'
+  table_name  TEXT NOT NULL,
+  record_id   UUID,
+  old_data    JSONB,
+  new_data    JSONB,
+  ip_address  TEXT,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
 
-alter table public.users disable row level security;
-alter table public.patients disable row level security;
-alter table public.clinics disable row level security;
-alter table public.rooms disable row level security;
-alter table public.doctors disable row level security;
-alter table public.appointments disable row level security;
-alter table public.timeline_entries disable row level security;
+-- Helper: Updated_at
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_clinics_updated_at BEFORE UPDATE ON clinics FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_patients_updated_at BEFORE UPDATE ON patients FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_diagnoses_updated_at BEFORE UPDATE ON diagnoses FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_appointments_updated_at BEFORE UPDATE ON appointments FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_followup_actions_updated_at BEFORE UPDATE ON followup_actions FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_journal_entries_updated_at BEFORE UPDATE ON journal_entries FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER set_medications_updated_at BEFORE UPDATE ON medications FOR EACH ROW EXECUTE FUNCTION set_updated_at();

@@ -1,233 +1,243 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
 import Link from "next/link"
-
-import { getPatientById, getPatientStats, getPatientTimeline } from "../api/patients"
-import { Badge } from "../components/ui/Badge"
-import { Card } from "../components/ui/Card"
+import { useState } from "react"
 
 interface PatientProfilePageProps {
   patientId: string
 }
 
-const RISK_MAP: Record<string, { label: string; tone: "green" | "amber" | "red" }> = {
-  LOW: { label: "เสี่ยงต่ำ", tone: "green" },
-  MEDIUM: { label: "เสี่ยงปานกลาง", tone: "amber" },
-  HIGH: { label: "เสี่ยงสูง", tone: "red" }
-}
-
-const TIMELINE_TYPE_MAP: Record<string, { label: string; color: string; icon: string }> = {
-  ATTENDED: { label: "มาตามนัด", color: "bg-nimitt-green-bg text-nimitt-green border-nimitt-green/20", icon: "✓" },
-  NO_SHOW: { label: "ขาดนัด", color: "bg-nimitt-red-bg text-nimitt-red border-nimitt-red/20", icon: "✕" },
-  RESCHEDULED: { label: "เลื่อนนัด", color: "bg-nimitt-amber-bg text-nimitt-amber border-nimitt-amber/20", icon: "↻" },
-  PHONE_FOLLOWUP: { label: "โทรติดตาม", color: "bg-nimitt-blue-bg text-nimitt-blue border-nimitt-blue/20", icon: "☎" },
-  NOTE: { label: "บันทึก", color: "bg-nimitt-bg text-nimitt-muted border-nimitt-border", icon: "📝" },
-  LAB_ORDER: { label: "ส่งตรวจแล็บ", color: "bg-nimitt-purple-bg text-nimitt-purple border-nimitt-purple/20", icon: "🔬" },
-  SURGERY: { label: "ผ่าตัด", color: "bg-nimitt-red-bg text-nimitt-red border-nimitt-red/20", icon: "⚕" },
-  ALLERGY: { label: "แพ้ยา", color: "bg-nimitt-amber-bg text-nimitt-amber border-nimitt-amber/20", icon: "⚠" },
-  MEDICATION: { label: "ยา", color: "bg-nimitt-teal-bg text-nimitt-teal border-nimitt-teal/20", icon: "💊" }
-}
-
-function StatBadge({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
-  return (
-    <div className="rounded-2xl border border-nimitt-border bg-nimitt-bg px-4 py-3 text-center">
-      <p className="font-mono text-2xl font-semibold text-nimitt-ink">{value}</p>
-      <p className="mt-0.5 text-xs font-medium text-nimitt-ink">{label}</p>
-      {sub && <p className="text-[11px] text-nimitt-faint">{sub}</p>}
-    </div>
-  )
-}
-
 export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
-  const patientQuery = useQuery({
-    queryKey: ["patient", patientId],
-    queryFn: () => getPatientById(patientId),
-    enabled: Boolean(patientId)
-  })
+  const [activeTab, setActiveTab] = useState<"ข้อมูลทั่วไป" | "ประวัติการรักษา" | "อารมณ์" | "นัดหมาย">("อารมณ์")
 
-  const statsQuery = useQuery({
-    queryKey: ["patient-stats", patientId],
-    queryFn: () => getPatientStats(patientId),
-    enabled: Boolean(patientId)
-  })
+  const TABS = ["ข้อมูลทั่วไป", "ประวัติการรักษา", "อารมณ์", "นัดหมาย"] as const
 
-  const timelineQuery = useQuery({
-    queryKey: ["patient-timeline", patientId],
-    queryFn: () => getPatientTimeline(patientId),
-    enabled: Boolean(patientId)
-  })
-
-  const patient = patientQuery.data as Record<string, unknown> | null
-  const stats = statsQuery.data as Record<string, unknown> | null
-  const timeline: Record<string, unknown>[] = (timelineQuery.data as { data?: Record<string, unknown>[] } | undefined)?.data ?? []
-
-  if (patientQuery.isLoading) {
-    return (
-      <div className="grid gap-5">
-        <Card className="flex items-center gap-5 p-6">
-          <div className="h-16 w-16 animate-shimmer rounded-2xl" />
-          <div className="flex-1 space-y-3">
-            <div className="h-5 w-48 animate-shimmer rounded-full" />
-            <div className="h-3.5 w-32 animate-shimmer rounded-full" />
-          </div>
-        </Card>
-        <div className="grid gap-4 sm:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => <div key={i} className="h-20 animate-shimmer rounded-3xl" />)}
-        </div>
-      </div>
-    )
-  }
-
-  if (!patient) {
-    return (
-      <Card className="flex flex-col items-center gap-4 py-16 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-nimitt-bg text-nimitt-faint">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </div>
-        <p className="text-sm text-nimitt-muted">ไม่พบข้อมูลผู้ป่วย</p>
-        <Link href="/appointments" className="text-sm font-medium text-nimitt-blue hover:underline">
-          ← กลับไปรายการนัดหมาย
-        </Link>
-      </Card>
-    )
-  }
-
-  const risk = RISK_MAP[String(patient.riskLevel)] ?? { label: "—", tone: "blue" as const }
-  const dob = patient.dateOfBirth
-    ? new Date(String(patient.dateOfBirth)).toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })
-    : "—"
+  const MOOD_DATA = [
+    { day: "จ.", mood: "😔", color: "#f97316", y: 70 },
+    { day: "อ.", mood: "😐", color: "#60a5fa", y: 50 },
+    { day: "พ.", mood: "😐", color: "#60a5fa", y: 50 },
+    { day: "พฤ.", mood: "🙂", color: "#34d399", y: 30 },
+    { day: "ศ.", mood: "😔", color: "#f97316", y: 70 },
+    { day: "ส.", mood: "😢", color: "#f43f5e", y: 90 },
+    { day: "อา.", mood: "😐", color: "#60a5fa", y: 50 },
+  ]
 
   return (
-    <div className="grid gap-5">
-      {/* Back link */}
-      <div className="animate-fade-in">
-        <Link href="/appointments" className="inline-flex items-center gap-1.5 text-sm text-nimitt-muted hover:text-nimitt-ink transition">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          กลับไปรายการนัดหมาย
+    <div className="mx-auto w-full max-w-[390px] min-h-screen pb-32" style={{ background: "#0d0f1a" }}>
+      
+      {/* ── Top Bar ── */}
+      <header className="sticky top-0 z-50 flex items-center justify-between px-5 pt-12 pb-4" style={{ background: "rgba(13,15,26,0.85)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
+        <Link href="/dashboard" className="flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-95" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(167,139,250,0.2)" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f1f5f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </Link>
-      </div>
+        <h1 className="text-[17px] font-bold text-white tracking-wide" style={{ fontFamily: "'Rajdhani', sans-serif" }}>โปรไฟล์ผู้ป่วย</h1>
+        <button className="flex h-10 w-10 items-center justify-center rounded-full transition-transform active:scale-95" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(167,139,250,0.2)" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f1f5f9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </button>
+      </header>
 
-      {/* Patient header */}
-      <Card className="animate-slide-up">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          {/* Avatar */}
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-nimitt-blue text-2xl font-bold text-white">
-            {String(patient.firstName ?? "?").charAt(0)}
+      <main className="flex flex-col gap-6 px-5 mt-4">
+        
+        {/* ── Hero Card ── */}
+        <section className="relative flex flex-col items-center rounded-3xl p-6 text-center animate-slide-up" style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(20px)", border: "1px solid rgba(167,139,250,0.15)", boxShadow: "0 24px 64px rgba(13,15,26,0.5)" }}>
+          {/* Background glow blob */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full" style={{ background: "radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 70%)" }} />
+          
+          <div className="relative mb-4 flex h-24 w-24 items-center justify-center rounded-full text-4xl font-bold" style={{ background: "linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)", color: "#fff", boxShadow: "0 0 30px rgba(167,139,250,0.4)" }}>
+            ส
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start gap-3">
-              <h2 className="text-2xl font-semibold text-nimitt-ink">
-                {String(patient.firstName ?? "")} {String(patient.lastName ?? "")}
-              </h2>
-              <Badge tone={risk.tone}>{risk.label}</Badge>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-nimitt-muted">
-              <span>HN: <span className="font-mono font-medium text-nimitt-ink">{String(patient.hn ?? "—")}</span></span>
-              <span>วันเกิด: {dob}</span>
-              <span>เพศ: {patient.gender === "MALE" ? "ชาย" : patient.gender === "FEMALE" ? "หญิง" : "—"}</span>
-              {Boolean(patient.phone) && <span>โทร: {String(patient.phone)}</span>}
-              {Boolean(patient.bloodType) && <span>กรุ๊ปเลือด: {String(patient.bloodType)}</span>}
-            </div>
-            {Array.isArray(patient.allergies) && patient.allergies.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {patient.allergies.map((a: unknown) => (
-                  <span key={String(a)} className="rounded-full border border-nimitt-red/20 bg-nimitt-red-bg px-2.5 py-0.5 text-xs text-nimitt-red">
-                    แพ้: {String(a)}
-                  </span>
-                ))}
-              </div>
-            )}
+          
+          <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "'Rajdhani', sans-serif" }}>นายสมชาย ใจดี</h2>
+          <p className="mt-1 font-mono text-[13px] text-[#2dd4bf] font-medium tracking-wide">HN 0014285</p>
+
+          {/* Pill stats row */}
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <span className="rounded-full px-3 py-1 text-[11px] font-medium text-[#f1f5f9]" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>อายุ 35 ปี</span>
+            <span className="rounded-full px-3 py-1 text-[11px] font-medium text-[#f1f5f9]" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>เพศชาย</span>
+            <span className="rounded-full px-3 py-1 text-[11px] font-medium text-[#f1f5f9]" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>กรุ๊ป B+</span>
           </div>
-        </div>
-      </Card>
 
-      {/* Stats */}
-      <div className="grid animate-slide-up gap-3 sm:grid-cols-4" style={{ animationDelay: "75ms" }}>
-        <StatBadge label="นัดทั้งหมด" value={String(patient.totalAppointments ?? stats?.total ?? 0)} />
-        <StatBadge
-          label="มาตามนัด"
-          value={String(patient.totalAttended ?? stats?.attended ?? 0)}
-          sub={patient.totalAppointments ? `${Math.round(((patient.totalAttended as number ?? 0) / (patient.totalAppointments as number)) * 100)}%` : undefined}
-        />
-        <StatBadge
-          label="ขาดนัด"
-          value={String(patient.totalNoShows ?? stats?.noShow ?? 0)}
-          sub={patient.totalAppointments ? `${Math.round(((patient.totalNoShows as number ?? 0) / (patient.totalAppointments as number)) * 100)}%` : undefined}
-        />
-        <StatBadge
-          label="No-show Score"
-          value={typeof patient.noShowScore === "number" ? patient.noShowScore.toFixed(1) : "—"}
-          sub="คะแนนความเสี่ยง"
-        />
-      </div>
+          <div className="mt-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold" style={{ background: "rgba(167,139,250,0.15)", color: "#a78bfa", border: "1px solid rgba(167,139,250,0.3)", boxShadow: "0 0 20px rgba(167,139,250,0.2)" }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#a78bfa]"></span>
+              โรคซึมเศร้า (MDD)
+            </span>
+          </div>
+        </section>
 
-      {/* Timeline */}
-      <Card className="animate-slide-up" style={{ animationDelay: "150ms" } as React.CSSProperties}>
-        <h3 className="mb-5 text-base font-semibold text-nimitt-ink">ประวัติการติดตาม</h3>
-
-        {timelineQuery.isLoading ? (
-          <div className="space-y-4">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-4">
-                <div className="h-9 w-9 animate-shimmer rounded-xl" />
-                <div className="flex-1 space-y-2 pt-1">
-                  <div className="h-3 w-40 animate-shimmer rounded-full" />
-                  <div className="h-2.5 w-64 animate-shimmer rounded-full" />
-                </div>
-              </div>
+        {/* ── Tabs Row ── */}
+        <div className="flex w-full overflow-x-auto pb-2 scrollbar-hide animate-slide-up" style={{ animationDelay: "100ms" }}>
+          <div className="flex gap-2">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-bold transition-all"
+                style={{
+                  background: activeTab === tab ? "linear-gradient(135deg, rgba(167,139,250,0.2) 0%, rgba(124,58,237,0.2) 100%)" : "transparent",
+                  color: activeTab === tab ? "#f1f5f9" : "#64748b",
+                  border: `1px solid ${activeTab === tab ? "rgba(167,139,250,0.4)" : "transparent"}`
+                }}
+              >
+                {tab}
+              </button>
             ))}
           </div>
-        ) : timeline.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-10 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-nimitt-bg text-nimitt-faint text-xl">📋</div>
-            <p className="text-sm text-nimitt-muted">ยังไม่มีประวัติการติดตาม</p>
-          </div>
-        ) : (
-          <ol className="relative border-l-2 border-nimitt-border pl-6 space-y-6">
-            {timeline.map((entry, i) => {
-              const type = TIMELINE_TYPE_MAP[String(entry.type)] ?? { label: String(entry.type), color: "bg-nimitt-bg text-nimitt-muted border-nimitt-border", icon: "•" }
-              const entryDate = entry.entryDate
-                ? new Date(String(entry.entryDate)).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })
-                : "—"
-              return (
-                <li
-                  key={String(entry.id)}
-                  className="animate-slide-up relative"
-                  style={{ animationDelay: `${i * 50}ms` }}
-                >
-                  {/* Timeline dot */}
-                  <div className={`absolute -left-9 flex h-7 w-7 items-center justify-center rounded-full border text-xs ${type.color}`}>
-                    {type.icon}
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium text-nimitt-ink">{type.label}</span>
-                      <span className="text-xs text-nimitt-faint">{entryDate}</span>
+        </div>
+
+        {/* ── Content Area (อารมณ์ Tab) ── */}
+        {activeTab === "อารมณ์" && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            
+            {/* Mood History Chart */}
+            <section className="rounded-3xl p-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(167,139,250,0.1)" }}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-[15px] font-bold text-white tracking-wide" style={{ fontFamily: "'Rajdhani', sans-serif" }}>ประวัติอารมณ์ 7 วันย้อนหลัง</h3>
+                <span className="rounded-full px-2.5 py-1 text-[10px] font-bold" style={{ background: "rgba(96,165,250,0.15)", color: "#60a5fa", border: "1px solid rgba(96,165,250,0.3)" }}>
+                  เฉลี่ย: ปานกลาง
+                </span>
+              </div>
+
+              <div className="relative h-[120px] w-full mt-4">
+                {/* Chart connecting line (SVG) */}
+                <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
+                  <path
+                    d={`M ${100/14}% ${MOOD_DATA[0].y}% ` + MOOD_DATA.slice(1).map((d, i) => `L ${(100/7)*(i+1) + (100/14)}% ${d.y}%`).join(" ")}
+                    fill="none"
+                    stroke="url(#lineGradient)"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="rgba(167,139,250,0.2)" />
+                      <stop offset="50%" stopColor="rgba(167,139,250,0.8)" />
+                      <stop offset="100%" stopColor="rgba(167,139,250,0.2)" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                {/* Data Points */}
+                <div className="absolute inset-0 flex justify-between items-center px-2">
+                  {MOOD_DATA.map((data, i) => (
+                    <div key={i} className="flex flex-col items-center absolute -translate-x-1/2" style={{ left: `${(100/7)*i + (100/14)}%`, top: `calc(${data.y}% - 14px)` }}>
+                      <div
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-xs shadow-lg relative z-10"
+                        style={{ background: "#0d0f1a", border: `1.5px solid ${data.color}`, boxShadow: `0 0 12px ${data.color}40` }}
+                      >
+                        {data.mood}
+                      </div>
+                      <span className="mt-8 text-[10px] text-[#64748b] font-medium absolute top-full">{data.day}</span>
                     </div>
-                    {Boolean(entry.notes) && (
-                      <p className="mt-1 text-sm text-nimitt-muted leading-6">{String(entry.notes)}</p>
-                    )}
-                    {Boolean(entry.noShowReason) && (
-                      <p className="mt-1 text-xs text-nimitt-red">เหตุผล: {String(entry.noShowReason)}</p>
-                    )}
-                    {Boolean(entry.createdBy) && (
-                      <p className="mt-1 text-xs text-nimitt-faint">
-                        บันทึกโดย: {String((entry.createdBy as Record<string, unknown>)?.firstName ?? "")} {String((entry.createdBy as Record<string, unknown>)?.lastName ?? "")}
-                      </p>
-                    )}
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Risk Assessment */}
+            <section className="rounded-3xl p-5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(167,139,250,0.1)" }}>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-[15px] font-bold text-white tracking-wide" style={{ fontFamily: "'Rajdhani', sans-serif" }}>ประเมินความเสี่ยง</h3>
+                <span className="rounded-full px-2.5 py-1 text-[10px] font-bold" style={{ background: "rgba(251,146,60,0.15)", color: "#fb923c", border: "1px solid rgba(251,146,60,0.3)" }}>
+                  ความเสี่ยงปานกลาง
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {/* PHQ-9 */}
+                <div>
+                  <div className="flex items-end justify-between mb-1.5">
+                    <p className="text-[13px] font-semibold text-[#f1f5f9]">PHQ-9 (ซึมเศร้า)</p>
+                    <p className="font-mono text-xs"><span className="text-[16px] text-[#f43f5e] font-bold">12</span> <span className="text-[#64748b]">/27</span></p>
                   </div>
-                </li>
-              )
-            })}
-          </ol>
+                  <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full w-[44%]" style={{ background: "linear-gradient(90deg, #a78bfa, #f43f5e)", boxShadow: "0 0 10px rgba(244,63,94,0.4)" }} />
+                  </div>
+                </div>
+
+                {/* GAD-7 */}
+                <div>
+                  <div className="flex items-end justify-between mb-1.5">
+                    <p className="text-[13px] font-semibold text-[#f1f5f9]">GAD-7 (วิตกกังวล)</p>
+                    <p className="font-mono text-xs"><span className="text-[16px] text-[#fb923c] font-bold">8</span> <span className="text-[#64748b]">/21</span></p>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full w-[38%]" style={{ background: "linear-gradient(90deg, #a78bfa, #fb923c)", boxShadow: "0 0 10px rgba(251,146,60,0.4)" }} />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Medication */}
+            <section>
+              <h3 className="text-[15px] font-bold text-white tracking-wide mb-3 pl-1" style={{ fontFamily: "'Rajdhani', sans-serif" }}>ยาที่ได้รับ</h3>
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between rounded-xl p-3.5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: "rgba(167,139,250,0.1)", color: "#a78bfa" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.5 20.5l10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line></svg>
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-[#f1f5f9]">ฟลูออกซิทีน (Fluoxetine)</p>
+                      <p className="text-[11px] font-mono text-[#94a3b8] mt-0.5">20 mg แคปซูล</p>
+                    </div>
+                  </div>
+                  <span className="rounded-md px-2 py-1 text-[10px] font-bold" style={{ background: "rgba(45,212,191,0.15)", color: "#2dd4bf" }}>วันละ 1 ครั้ง (เช้า)</span>
+                </div>
+
+                <div className="flex items-center justify-between rounded-xl p-3.5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: "rgba(167,139,250,0.1)", color: "#a78bfa" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="2" x2="12" y2="22"></line></svg>
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-semibold text-[#f1f5f9]">ลอราซีแพม (Lorazepam)</p>
+                      <p className="text-[11px] font-mono text-[#94a3b8] mt-0.5">0.5 mg เม็ด</p>
+                    </div>
+                  </div>
+                  <span className="rounded-md px-2 py-1 text-[10px] font-bold" style={{ background: "rgba(251,146,60,0.15)", color: "#fb923c" }}>เวลานอน (เมื่อจำเป็น)</span>
+                </div>
+              </div>
+            </section>
+          </div>
         )}
-      </Card>
+      </main>
+
+      {/* ── Bottom Sticky Buttons ── */}
+      <div 
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] px-5 py-6 flex flex-col gap-3 z-50 rounded-t-3xl"
+        style={{
+          background: "linear-gradient(to top, rgba(13,15,26,0.95) 60%, transparent 100%)",
+          backdropFilter: "blur(10px)"
+        }}
+      >
+        <button
+          className="w-full rounded-2xl py-3.5 text-sm font-bold text-white transition-all active:scale-95 shadow-lg"
+          style={{
+            background: "linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)",
+            boxShadow: "0 8px 24px rgba(124,58,237,0.4)"
+          }}
+        >
+          บันทึกการพบ (Follow up)
+        </button>
+        <button
+          className="w-full rounded-2xl py-3.5 text-sm font-bold transition-all active:scale-95"
+          style={{
+            background: "rgba(45,212,191,0.05)",
+            border: "1px solid rgba(45,212,191,0.4)",
+            color: "#2dd4bf"
+          }}
+        >
+          นัดหมายถัดไป
+        </button>
+      </div>
+
+      {/* Scrollbar hide utility */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   )
 }
