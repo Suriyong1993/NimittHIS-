@@ -22,9 +22,21 @@ import { timelineRouter } from "./modules/timeline/timeline.router"
 
 const app = express()
 
+// รองรับ CORS_ORIGIN แบบ comma-separated เช่น "http://localhost:3000,https://app.example.com"
+const allowedOrigins = env.CORS_ORIGIN.split(",")
+  .map((o) => o.trim())
+  .filter(Boolean)
+
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin: (origin, callback) => {
+      // อนุญาต server-to-server requests (origin undefined) และ origins ที่ระบุไว้
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error(`CORS: origin '${origin}' ไม่ได้รับอนุญาต`))
+      }
+    },
     credentials: true
   })
 )

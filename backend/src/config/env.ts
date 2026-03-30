@@ -19,8 +19,11 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: z.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
-  CORS_ORIGIN: z.string().default("http://localhost:5173"),
-  FRONTEND_URL: z.string().default("http://localhost:5173"),
+  // Supabase JWT secret (Settings > API > JWT Settings > JWT Secret)
+  SUPABASE_JWT_SECRET: z.string().min(32, "SUPABASE_JWT_SECRET ต้องมีความยาวอย่างน้อย 32 ตัวอักษร"),
+  // รองรับหลาย origin คั่นด้วยจุลภาค เช่น "http://localhost:3000,https://app.example.com"
+  CORS_ORIGIN: z.string().default("http://localhost:3000,http://localhost:5173"),
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
   TWILIO_ACCOUNT_SID: z.string().optional().default(""),
   TWILIO_AUTH_TOKEN: z.string().optional().default(""),
   TWILIO_FROM_NUMBER: z.string().optional().default("")

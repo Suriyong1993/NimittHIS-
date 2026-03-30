@@ -73,10 +73,10 @@ export class AuthService {
     }
   }
 
-  async refresh(payload: RefreshTokenDto): Promise<{ accessToken: string }> {
+  async refresh(payload: RefreshTokenDto): Promise<{ accessToken: string; refreshToken: string }> {
     const decoded = verifyRefreshToken(payload.refreshToken)
-    const redisKey = buildSessionKey(decoded.userId, decoded.sessionId)
-    const storedToken = await redis.get(redisKey)
+    const oldKey = buildSessionKey(decoded.userId, decoded.sessionId)
+    const storedToken = await redis.get(oldKey)
 
     if (!storedToken || storedToken !== payload.refreshToken) {
       throw new ApiError(401, "INVALID_REFRESH_TOKEN", "ไม่สามารถต่ออายุเซสชันได้")
@@ -87,16 +87,31 @@ export class AuthService {
     })
 
     if (!user || !user.isActive) {
+      // ลบ session เก่าออกด้วยถ้า user ไม่ active
+      await redis.del(oldKey)
       throw new ApiError(401, "USER_NOT_FOUND", "ไม่พบผู้ใช้งาน")
     }
+
+    // Rotate: ลบ session เก่า สร้าง session ใหม่ (ป้องกัน replay attack)
+    const newSessionId = randomUUID()
+    await redis.del(oldKey)
+
+    const newRefreshToken = signRefreshToken({ userId: user.id, sessionId: newSessionId })
+    await redis.set(
+      buildSessionKey(user.id, newSessionId),
+      newRefreshToken,
+      "EX",
+      60 * 60 * 24 * 7
+    )
 
     return {
       accessToken: signAccessToken({
         userId: user.id,
         username: user.username,
         role: user.role,
-        sessionId: decoded.sessionId
-      })
+        sessionId: newSessionId
+      }),
+      refreshToken: newRefreshToken
     }
   }
 

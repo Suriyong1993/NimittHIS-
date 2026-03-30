@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       email: payload.email,
       password: payload.password,
       options: {
-        data: { role: 'ADMIN' }
+        data: { role: 'NURSE' }
       }
     })
 
