@@ -1,15 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --color-primary: #2563eb;
-    --color-bg: #f7f7f5;
-    --color-surface: #ffffff;
-    --color-ink: #111110;
-    --color-muted: #6b6b65;
-    --color-border: #e5e5e0;
+    /* Legacy tokens (kept for compatibility) */
+    --color-primary: #7c3aed;
+    --color-bg: #030712;
+    --color-surface: #0a1628;
+    --color-ink: #e2e8f0;
+    --color-muted: #94a3b8;
+    --color-border: rgba(99,179,237,0.15);
+
+    /* Glassmorphism design tokens */
+    --void: #030712;
+    --deep: #060d1f;
+    --surface: #0a1628;
+    --glass: rgba(12, 26, 60, 0.6);
+    --glass-light: rgba(99, 179, 237, 0.06);
+    --glass-border: rgba(99, 179, 237, 0.15);
+    --glass-border-bright: rgba(139, 92, 246, 0.4);
+    --plasma: #7c3aed;
+    --plasma-light: #a78bfa;
+    --plasma-glow: rgba(124, 58, 237, 0.35);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34, 211, 238, 0.12);
+    --emerald: #10b981;
+    --rose: #f43f5e;
+    --amber: #f59e0b;
   }
 
   * {
