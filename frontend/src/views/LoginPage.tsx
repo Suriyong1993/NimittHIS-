@@ -16,7 +16,7 @@ type LoginForm = z.infer<typeof loginSchema>
 export function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuthStore()
+  const { loginAction } = useAuthStore()
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -24,7 +24,7 @@ export function LoginPage() {
   })
 
   const mutation = useMutation({
-    mutationFn: ({ email, password }: LoginForm) => login(email, password),
+    mutationFn: (data: LoginForm) => loginAction({ email: data.email, password: data.password }),
     onSuccess: () => {
       const next = searchParams.get("next") ?? "/dashboard"
       router.replace(next)
@@ -102,7 +102,7 @@ export function LoginPage() {
           {errors.password && <p className="text-xs text-rose-400 mt-1">{errors.password.message}</p>}
         </div>
 
-        {mutation.error && (
+        {mutation.isError && (
           <div className="mb-4 px-4 py-3 rounded-xl text-sm text-rose-400" style={{ background:"rgba(244,63,94,0.1)", border:"1px solid rgba(244,63,94,0.25)" }}>
             อีเมลหรือรหัสผ่านไม่ถูกต้อง
           </div>
