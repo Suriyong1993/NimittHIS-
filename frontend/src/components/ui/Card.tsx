@@ -10,11 +10,11 @@ export function Card({ children, className = "", style }: PropsWithChildren<Card
     <section
       className={`rounded-3xl p-6 ${className}`}
       style={{
-        background: "rgba(255,255,255,0.04)",
-        backdropFilter: "blur(12px) saturate(110%)",
-        WebkitBackdropFilter: "blur(12px) saturate(110%)",
-        border: "1px solid rgba(167,139,250,0.14)",
-        boxShadow: "0 18px 50px rgba(13,15,26,0.5)",
+        background: "rgba(255,255,255,0.86)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+        border: "1px solid rgba(23,48,41,0.08)",
+        boxShadow: "0 16px 36px rgba(24,58,54,0.08)",
         ...style
       }}
     >

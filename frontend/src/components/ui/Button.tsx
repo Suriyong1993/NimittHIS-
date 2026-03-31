@@ -10,29 +10,28 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?:  boolean
 }
 
-/* MindCare dark-theme button variants */
 const variantStyles: Record<Variant, React.CSSProperties> = {
   primary: {
-    background: "linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)",
+    background: "linear-gradient(135deg, #2e6f64 0%, #214f47 100%)",
     color: "#fff",
     border: "1px solid transparent",
-    boxShadow: "0 0 20px rgba(167,139,250,0.30)"
+    boxShadow: "0 14px 28px rgba(33,79,71,0.18)"
   },
   secondary: {
-    background: "rgba(255,255,255,0.06)",
-    color: "#f1f5f9",
-    border: "1px solid rgba(167,139,250,0.22)"
+    background: "#ffffff",
+    color: "#173029",
+    border: "1px solid rgba(23,48,41,0.10)"
   },
   ghost: {
     background: "transparent",
-    color: "#94a3b8",
+    color: "#36534b",
     border: "1px solid transparent"
   },
   danger: {
-    background: "rgba(244,63,94,0.15)",
-    color: "#f43f5e",
-    border: "1px solid rgba(244,63,94,0.30)",
-    boxShadow: "0 0 12px rgba(244,63,94,0.15)"
+    background: "#fdebea",
+    color: "#bf5a53",
+    border: "1px solid rgba(191,90,83,0.20)",
+    boxShadow: "none"
   }
 }
 
