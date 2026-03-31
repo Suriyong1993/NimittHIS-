@@ -13,42 +13,34 @@ export function AppShell({ children }: PropsWithChildren) {
   const setSidebarOpen = useUiStore((s) => s.setSidebarOpen)
   const pathname = usePathname()
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setSidebarOpen(false)
   }, [pathname, setSidebarOpen])
 
   return (
-    <div className="min-h-screen p-3 md:p-5" style={{ background: "#0d0f1a" }}>
-      <div className="mx-auto grid min-h-[calc(100vh-1.5rem)] max-w-[1600px] gap-5 lg:grid-cols-[272px_minmax(0,1fr)]">
-
-        {/* Desktop Sidebar */}
+    <div className="min-h-screen px-3 py-3 md:px-5 md:py-5">
+      <div className="page-shell grid min-h-[calc(100vh-1.5rem)] gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="hidden lg:block">
           <div className="sticky top-5 h-[calc(100vh-2.5rem)]">
             <Sidebar />
           </div>
         </div>
 
-        {/* Mobile Sidebar Overlay */}
-        {sidebarOpen && (
+        {sidebarOpen ? (
           <div className="fixed inset-0 z-50 lg:hidden">
-            {/* Backdrop */}
             <div
-              className="absolute inset-0 animate-fade-in"
-              style={{ background: "rgba(13,15,26,0.75)", backdropFilter: "blur(8px)" }}
+              className="absolute inset-0 bg-[#173029]/20 backdrop-blur-sm"
               onClick={() => setSidebarOpen(false)}
             />
-            {/* Drawer */}
-            <div className="absolute left-0 top-0 h-full w-72 animate-slide-in-left p-3">
+            <div className="absolute left-3 top-3 h-[calc(100%-1.5rem)] w-[86vw] max-w-[320px]">
               <Sidebar />
             </div>
           </div>
-        )}
+        ) : null}
 
-        {/* Main content */}
         <div className="flex min-w-0 flex-col gap-5">
           <TopBar />
-          <main className="min-w-0 flex-1 animate-slide-up">{children}</main>
+          <main className="min-w-0 flex-1">{children}</main>
         </div>
       </div>
     </div>
