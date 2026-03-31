@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import type { Metadata } from "next"
-import { IBM_Plex_Mono, Rajdhani, Sarabun } from "next/font/google"
+import { Rajdhani, Sarabun } from "next/font/google"
 
 import "./globals.css"
 
@@ -18,12 +18,6 @@ const rajdhani = Rajdhani({
   weight: ["400", "500", "600", "700"]
 })
 
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400", "500"]
-})
-
 export const metadata: Metadata = {
   title: "NimittHIS — MindCare",
   description: "ระบบติดตามนัดหมายและสุขภาพจิตผู้ป่วยสำหรับโรงพยาบาลไทย"
@@ -31,11 +25,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="th" className={`${sarabun.variable} ${rajdhani.variable} ${ibmPlexMono.variable}`}>
+    <html lang="th" className={`${sarabun.variable} ${rajdhani.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>
     </html>
   )
 }
+
 

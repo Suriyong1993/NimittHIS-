@@ -35,63 +35,43 @@ export function TopBar() {
   }, [])
 
   return (
-    <header
-      className="animate-fade-in flex items-center justify-between gap-4 px-5 py-3.5"
-      style={{
-        background: "rgba(13,15,26,0.65)",
-        backdropFilter: "blur(20px) saturate(120%)",
-        WebkitBackdropFilter: "blur(20px) saturate(120%)",
-        border: "1px solid rgba(167,139,250,0.18)",
-        borderRadius: "28px",
-        boxShadow: "0 8px 32px rgba(13,15,26,0.4)"
-      }}
-    >
+    <header className="glass px-6 py-4 rounded-[32px] flex items-center justify-between gap-6 animate-entrance">
       {/* Mobile menu button */}
       <button
-        className="flex h-9 w-9 items-center justify-center rounded-xl transition lg:hidden"
-        style={{ background: "rgba(167,139,250,0.10)", border: "1px solid rgba(167,139,250,0.20)", color: "#a78bfa" }}
+        className="lg:hidden flex h-10 w-10 items-center justify-center rounded-2xl glass-light text-primary active:scale-95 transition-transform"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-label="เปิด/ปิดเมนู"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
         </svg>
       </button>
 
       {/* Date/Greeting */}
       <div className="hidden sm:block">
-        <p className="text-xs" style={{ color: "#64748b" }}>{getThaiDate(now)}</p>
-        <p className="text-sm font-semibold" style={{ color: "#f1f5f9" }}>
-          {getGreeting(now.getHours())}{user?.firstName ? `, ${user.firstName}` : ""}
-        </p>
+        <p className="text-[10px] uppercase tracking-widest text-muted font-bold">{getThaiDate(now)}</p>
+        <h1 className="text-lg font-bold tracking-tight mt-0.5">
+          {getGreeting(now.getHours())}{user?.firstName ? `, คุณ${user.firstName}` : ""}
+        </h1>
       </div>
 
       {/* Right: status + user + logout */}
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-4">
         {/* System status pill */}
-        <div
-          className="hidden items-center gap-2 px-3 py-1.5 md:flex rounded-2xl"
-          style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)" }}
-        >
-          <span className="h-2 w-2 rounded-full bg-nimitt-green animate-pulse-soft" style={{ boxShadow: "0 0 6px rgba(16,185,129,0.7)" }} />
-          <span className="text-xs font-medium" style={{ color: "#10b981" }}>ระบบปกติ</span>
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">System Online</span>
         </div>
 
-        {/* User pill */}
+        {/* User profile */}
         {user && (
-          <div
-            className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl"
-            style={{ background: "rgba(167,139,250,0.08)", border: "1px solid rgba(167,139,250,0.20)" }}
-          >
-            <div
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold"
-              style={{ background: "linear-gradient(135deg,#a78bfa,#7c3aed)", color: "#fff", boxShadow: "0 0 10px rgba(167,139,250,0.4)" }}
-            >
+          <div className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl glass-light border-white/5">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">
               {user.firstName?.charAt(0) ?? "?"}
             </div>
-            <div className="hidden sm:block">
-              <p className="text-xs font-semibold leading-none" style={{ color: "#f1f5f9" }}>{user.firstName} {user.lastName}</p>
-              <p className="text-[11px] leading-none mt-0.5" style={{ color: "#64748b" }}>{user.email}</p>
+            <div className="hidden lg:block">
+              <p className="text-xs font-bold leading-none">{user.firstName} {user.lastName}</p>
+              <p className="text-[10px] text-muted mt-1">{user.email}</p>
             </div>
           </div>
         )}
@@ -99,19 +79,21 @@ export function TopBar() {
         {/* Logout */}
         <Button
           variant="secondary"
+          className="rounded-2xl h-12 px-6 font-bold text-xs tap-active bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-none"
           onClick={async () => {
             await logout()
             router.replace("/login")
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
             <polyline points="16 17 21 12 16 7" />
             <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
-          ออกจากระบบ
+          ออกระบบ
         </Button>
       </div>
     </header>
   )
 }
+
