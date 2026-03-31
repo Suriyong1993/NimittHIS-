@@ -14,15 +14,16 @@ export const authenticate = (request: Request, _response: Response, next: NextFu
 
   try {
     const payload = verifyAccessToken(token)
-    request.user = {
+    // Cast to any to bypass the augmentation issue in ts-node runtime
+    ;(request as any).user = {
       userId: payload.userId,
       username: payload.username,
-      role: payload.role as Express.UserSession["role"],
+      role: payload.role,
       sessionId: payload.sessionId
     }
 
     return next()
-  } catch {
+  } catch (error) {
     return next(new ApiError(401, "INVALID_TOKEN", "โทเคนไม่ถูกต้องหรือหมดอายุ"))
   }
 }
