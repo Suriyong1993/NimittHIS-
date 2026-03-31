@@ -75,6 +75,18 @@ const fallbackTimeline: TimelineRecord[] = [
   }
 ]
 
+const adherenceWidgets = [
+  { title: "Medication adherence", value: "76%", note: "ยังมี missed doses เป็นบางวันช่วงสัปดาห์ก่อน", tone: "status-warning" },
+  { title: "Caregiver contactability", value: "ดี", note: "ติดต่อผู้ดูแลได้ช่วงเช้าและวันทำการ", tone: "status-success" },
+  { title: "Safety follow-up", value: "ติดตามต่อ", note: "ถ้าไม่มาตามนัดต้องโทรกลับภายใน 24-72 ชม.", tone: "status-danger" }
+]
+
+const assignedTasks = [
+  { owner: "พยาบาลคลินิก", task: "โทรยืนยันก่อนนัด 1 วัน", due: "วันนี้", tone: "status-brand" },
+  { owner: "Case manager", task: "ติดตาม barrier เรื่องการเดินทาง", due: "ภายใน 3 วัน", tone: "status-warning" },
+  { owner: "แพทย์", task: "ทบทวนการใช้ยาและ adverse effect", due: "visit ถัดไป", tone: "status-success" }
+]
+
 function timelineTone(type: string) {
   if (type === "NO_SHOW") return "status-danger"
   if (type === "PHONE_FOLLOWUP") return "status-warning"
@@ -216,6 +228,21 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
               ))}
             </div>
           </div>
+
+          <div className="section-card px-5 py-5">
+            <h3 className="text-xl font-semibold">Assigned care tasks</h3>
+            <div className="mt-4 space-y-3">
+              {assignedTasks.map((item) => (
+                <div key={`${item.owner}-${item.task}`} className="rounded-[22px] bg-[var(--surface-strong)] px-4 py-4" style={{ border: "1px solid var(--line)" }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold">{item.owner}</p>
+                    <span className={`status-badge ${item.tone}`}>{item.due}</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-7">{item.task}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -242,6 +269,16 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
                     {item.title}
                   </p>
                   <p className="mt-3 text-xl font-semibold tracking-[-0.02em]">{item.value}</p>
+                  <p className="mt-2 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>{item.note}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              {adherenceWidgets.map((item) => (
+                <div key={item.title} className="rounded-[24px] bg-[var(--page-bg-soft)] px-4 py-4">
+                  <span className={`status-badge ${item.tone}`}>{item.title}</span>
+                  <p className="mt-3 text-2xl font-semibold tracking-[-0.02em]">{item.value}</p>
                   <p className="mt-2 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>{item.note}</p>
                 </div>
               ))}

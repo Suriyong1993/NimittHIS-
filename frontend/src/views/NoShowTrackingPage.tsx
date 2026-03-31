@@ -1,17 +1,21 @@
 "use client"
 
-import { useMemo } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useMemo, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { getOverdueAppointments } from "../api/appointments"
 import { getPatients } from "../api/patients"
+import { createFollowUpNote } from "../api/timeline"
+import { Button } from "../components/ui/Button"
 
 type BoardCard = {
   id: string
+  patientId: string
   title: string
   subtitle: string
   detail: string
   tag: string
+  lane: "call" | "contacted" | "rescheduled" | "overdue"
 }
 
 const fallbackRisk = [
@@ -25,6 +29,7 @@ const fallbackOverdue = [
 ]
 
 export function NoShowTrackingPage() {
+  const queryClient = useQueryClient()
   const { data: riskData } = useQuery({
     queryKey: ["noshow", "risk"],
     queryFn: () => getPatients({ riskLevel: "HIGH", limit: 10 }),
@@ -43,38 +48,46 @@ export function NoShowTrackingPage() {
   const board = useMemo(() => {
     const toCallToday: BoardCard[] = riskPatients.map((patient) => ({
       id: `call-${patient.id}`,
+      patientId: patient.id,
       title: `${patient.firstName} ${patient.lastName}`,
       subtitle: `HN ${patient.hn} • โทร ${patient.phone ?? "-"}`,
       detail: `ขาดนัดสะสม ${patient.totalNoShows} ครั้ง • score ${Math.round(patient.noShowScore * 100)}%`,
-      tag: "เสี่ยงสูง"
+      tag: "เสี่ยงสูง",
+      lane: "call"
     }))
 
     const contacted: BoardCard[] = [
       {
         id: "contacted-1",
+        patientId: "contacted-1",
         title: "วิไล รักษ์ดี",
         subtitle: "ญาติรับสายแล้ว",
         detail: "ขอเลื่อนมาวันศุกร์ช่วงเช้า เนื่องจากเดินทางไม่สะดวก",
-        tag: "กำลังประสาน"
+        tag: "กำลังประสาน",
+        lane: "contacted"
       }
     ]
 
     const rescheduled: BoardCard[] = [
       {
         id: "reschedule-1",
+        patientId: "reschedule-1",
         title: "ประเสริฐ วงค์ดี",
         subtitle: "เลื่อนนัดสำเร็จ",
         detail: "ย้ายนัดเป็น 4 เม.ย. 2569 พร้อม note ให้ติดตามยา",
-        tag: "กลับเข้าระบบ"
+        tag: "กลับเข้าระบบ",
+        lane: "rescheduled"
       }
     ]
 
     const overdueLane: BoardCard[] = overduePatients.map((appointment) => ({
       id: `overdue-${appointment.id}`,
+      patientId: appointment.id,
       title: `${appointment.patient?.firstName} ${appointment.patient?.lastName}`,
       subtitle: `${appointment.clinic?.name} • ${appointment.timeFrom}`,
       detail: "ยังไม่มีการอัปเดตสถานะ ต้องตรวจสอบกับหน้าห้องและบันทึกผล",
-      tag: "คิวค้าง"
+      tag: "คิวค้าง",
+      lane: "overdue"
     }))
 
     return [
@@ -84,6 +97,65 @@ export function NoShowTrackingPage() {
       { key: "overdue", label: "รออัปเดตสถานะ", tone: "status-brand", items: overdueLane }
     ]
   }, [overduePatients, riskPatients])
+
+  const initialCards = useMemo(() => board.flatMap((lane) => lane.items), [board])
+  const [cards, setCards] = useState<BoardCard[]>(initialCards)
+
+  const followUpMutation = useMutation({
+    mutationFn: ({ patientId, notes }: { patientId: string; notes: string }) => createFollowUpNote(patientId, notes),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["noshow"] })
+    }
+  })
+
+  const laneMeta = [
+    { key: "call", label: "ต้องโทรวันนี้", tone: "status-danger" },
+    { key: "contacted", label: "ติดต่อแล้ว", tone: "status-warning" },
+    { key: "rescheduled", label: "กลับเข้าระบบแล้ว", tone: "status-success" },
+    { key: "overdue", label: "รออัปเดตสถานะ", tone: "status-brand" }
+  ] as const
+
+  const boardByLane = laneMeta.map((lane) => ({
+    ...lane,
+    items: cards.filter((item) => item.lane === lane.key)
+  }))
+
+  function moveCard(cardId: string, lane: BoardCard["lane"], tag: string, detailPrefix: string) {
+    setCards((current) =>
+      current.map((item) =>
+        item.id === cardId
+          ? {
+              ...item,
+              lane,
+              tag,
+              detail: `${detailPrefix} • ${item.detail}`
+            }
+          : item
+      )
+    )
+  }
+
+  async function markCalled(card: BoardCard) {
+    moveCard(card.id, "contacted", "กำลังประสาน", "บันทึกว่าติดต่อผู้ป่วยหรือญาติแล้ว")
+    if (card.patientId.startsWith("o") || card.patientId.includes("contacted") || card.patientId.includes("reschedule")) {
+      return
+    }
+    await followUpMutation.mutateAsync({
+      patientId: card.patientId,
+      notes: `โทรติดตามผู้ป่วย ${card.title} แล้ว อยู่ระหว่างประสานการมารับบริการ`
+    })
+  }
+
+  async function markRescheduled(card: BoardCard) {
+    moveCard(card.id, "rescheduled", "กลับเข้าระบบ", "บันทึกว่าเลื่อนนัดและกลับเข้าสู่แผนการรักษาแล้ว")
+    if (card.patientId.startsWith("o") || card.patientId.includes("contacted") || card.patientId.includes("reschedule")) {
+      return
+    }
+    await followUpMutation.mutateAsync({
+      patientId: card.patientId,
+      notes: `จัดการ follow-up และเลื่อนนัดสำหรับ ${card.title} เรียบร้อยแล้ว`
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -99,22 +171,22 @@ export function NoShowTrackingPage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="surface-strong rounded-[22px] px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>ต้องโทรวันนี้</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{board[0].items.length}</p>
+              <p className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{boardByLane[0].items.length}</p>
             </div>
             <div className="surface-strong rounded-[22px] px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>กำลังประสาน</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{board[1].items.length}</p>
+              <p className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{boardByLane[1].items.length}</p>
             </div>
             <div className="surface-strong rounded-[22px] px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>กลับเข้าระบบ</p>
-              <p className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{board[2].items.length}</p>
+              <p className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{boardByLane[2].items.length}</p>
             </div>
           </div>
         </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-4">
-        {board.map((lane) => (
+        {boardByLane.map((lane) => (
           <div key={lane.key} className="section-card px-4 py-4">
             <div className="flex items-center justify-between gap-2">
               <span className={`status-badge ${lane.tone}`}>{lane.label}</span>
@@ -139,6 +211,28 @@ export function NoShowTrackingPage() {
                       {item.subtitle}
                     </p>
                     <p className="mt-3 text-sm leading-7">{item.detail}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {item.lane === "call" ? (
+                        <>
+                          <Button size="sm" onClick={() => void markCalled(item)} loading={followUpMutation.isPending}>
+                            บันทึกว่าติดต่อแล้ว
+                          </Button>
+                          <Button variant="secondary" size="sm" onClick={() => void markRescheduled(item)}>
+                            เลื่อนนัดแล้ว
+                          </Button>
+                        </>
+                      ) : null}
+                      {item.lane === "contacted" ? (
+                        <Button size="sm" onClick={() => void markRescheduled(item)}>
+                          ย้ายไปกลับเข้าระบบ
+                        </Button>
+                      ) : null}
+                      {item.lane === "overdue" ? (
+                        <Button variant="secondary" size="sm" onClick={() => moveCard(item.id, "contacted", "กำลังประสาน", "หน้าห้องตรวจสอบแล้วและส่งต่อทีมติดตาม")}>
+                          ส่งต่อทีมติดตาม
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 ))
               )}
