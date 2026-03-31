@@ -8,7 +8,8 @@
       "Bash(npm run:*)",
       "mcp__claude_ai_Vercel__list_deployments",
       "mcp__claude_ai_Vercel__get_deployment_build_logs",
-      "mcp__claude_ai_Vercel__get_deployment"
+      "mcp__claude_ai_Vercel__get_deployment",
+      "Bash(find 'C:\\\\Users\\\\Administrator\\\\Documents\\\\Trae Project\\\\NimittHIS  APP/frontend/src' -name *.ts -o -name *.tsx)"
     ]
   }
 }
