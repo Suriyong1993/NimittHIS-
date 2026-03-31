@@ -3,6 +3,7 @@
 import { type PropsWithChildren, useEffect, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
+import { AssistantPanel } from "@/components/assistant/AssistantPanel"
 import { getSupabaseClient } from "@/lib/supabase"
 import { useAuthStore } from "@/store/authStore"
 
@@ -26,5 +27,10 @@ export function Providers({ children }: PropsWithChildren) {
     }
   }, [bootstrap, syncSession])
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <AssistantPanel />
+    </QueryClientProvider>
+  )
 }
