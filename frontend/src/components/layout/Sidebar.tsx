@@ -13,10 +13,10 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const menu = [
-  { to: "/dashboard", label: "แดชบอร์ด", hint: "ภาพรวมผู้ป่วยวันนี้" },
-  { to: "/appointments", label: "นัดหมาย", hint: "ตารางนัดและการยืนยัน" },
-  { to: "/noshow", label: "ติดตามขาดนัด", hint: "กลุ่มเสี่ยงและคิวตกหล่น" },
-  { to: "/analytics", label: "วิเคราะห์", hint: "ภาพรวมเชิงบริหาร" }
+  { to: "/dashboard", label: "แดชบอร์ด", hint: "ภาพรวมเวรและงานสำคัญ" },
+  { to: "/appointments", label: "นัดหมาย", hint: "คิวตรวจ ห้องตรวจ และแพทย์" },
+  { to: "/noshow", label: "ติดตามขาดนัด", hint: "งาน outreach และผู้ป่วยเสี่ยง" },
+  { to: "/analytics", label: "วิเคราะห์", hint: "ผลลัพธ์การดูแลและภาระงาน" }
 ]
 
 export function Sidebar() {
@@ -25,46 +25,56 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex h-full w-full flex-col rounded-[32px] p-6 text-white"
-      style={{ background: "var(--nav-bg)", boxShadow: "0 28px 54px rgba(24,58,54,0.24)" }}
+      className="flex h-full w-full flex-col rounded-[32px] p-5 text-white xl:p-6"
+      style={{ background: "var(--nav-bg)", boxShadow: "0 28px 54px rgba(15,39,56,0.26)" }}
     >
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-3 rounded-full bg-white/10 px-3 py-2">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-sm font-semibold">MH</span>
+      <div className="mb-7">
+        <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/10 px-3 py-2">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-sm font-semibold">NH</span>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">NimittHIS</p>
-            <p className="text-sm font-medium text-white/95">ระบบติดตามนัดหมาย — จิตเวช</p>
+            <p className="text-sm font-medium text-white/95">ระบบติดตามนัดหมายจิตเวช</p>
           </div>
         </div>
 
-        <div className="mt-6 rounded-[24px] bg-white/10 p-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-white/60">Care Focus</p>
-          <h2 className="mt-2 text-2xl font-semibold leading-tight text-white">
-            ออกแบบเพื่อแพทย์และพยาบาล
+        <div className="mt-5 rounded-[28px] border border-white/10 bg-white/10 p-4 xl:p-5">
+          <p className="text-xs uppercase tracking-[0.22em] text-white/60">Clinical Workspace</p>
+          <h2 className="mt-2 text-[26px] font-semibold leading-tight text-white">
+            ออกแบบให้ทีมรักษาเห็นงานสำคัญก่อนเสมอ
           </h2>
           <p className="mt-3 text-sm leading-7 text-white/72">
-            เห็นภาพรวมผู้ป่วย นัดหมาย การติดตามขาดนัด และผลลัพธ์เชิงคลินิกจากหน้าจอเดียว
+            เห็นภาพรวมผู้ป่วย คิวตรวจ งานติดตาม และผลลัพธ์เชิงคลินิกจากชุดหน้าจอเดียว
           </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-[20px] bg-white/8 px-3 py-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Realtime</p>
+              <p className="mt-2 text-sm font-semibold text-white">ข้อมูลอัปเดตทันที</p>
+            </div>
+            <div className="rounded-[20px] bg-white/8 px-3 py-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">AI Assist</p>
+              <p className="mt-2 text-sm font-semibold text-white">สรุป ช่วยคิด ช่วยติดตาม</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-2">
+      <nav className="flex flex-1 flex-col gap-2.5">
         {menu.map((item) => {
           const active = pathname === item.to
           return (
             <Link
               key={item.to}
               href={item.to}
-              className="rounded-[22px] px-4 py-4 transition-all"
+              className="rounded-[24px] px-4 py-4 transition-all duration-150"
               style={
                 active
                   ? {
-                      background: "rgba(255,255,255,0.16)",
-                      border: "1px solid rgba(255,255,255,0.18)"
+                      background: "linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.12) 100%)",
+                      border: "1px solid rgba(255,255,255,0.2)"
                     }
                   : {
                       background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.05)"
+                      border: "1px solid rgba(255,255,255,0.06)"
                     }
               }
             >
@@ -75,7 +85,7 @@ export function Sidebar() {
                 </div>
                 <span
                   className="mt-1 inline-flex h-2.5 w-2.5 rounded-full"
-                  style={{ background: active ? "#f4d3a0" : "rgba(255,255,255,0.25)" }}
+                  style={{ background: active ? "#9ad0ef" : "rgba(255,255,255,0.25)" }}
                 />
               </div>
             </Link>
@@ -84,7 +94,7 @@ export function Sidebar() {
       </nav>
 
       {user ? (
-        <div className="mt-6 rounded-[24px] border border-white/10 bg-white/8 p-4">
+        <div className="mt-5 rounded-[26px] border border-white/10 bg-white/8 p-4">
           <p className="text-xs uppercase tracking-[0.22em] text-white/58">กำลังใช้งาน</p>
           <div className="mt-3 flex items-center gap-3">
             <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/14 text-base font-semibold">

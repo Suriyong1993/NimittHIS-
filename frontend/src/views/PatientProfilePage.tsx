@@ -24,7 +24,7 @@ const fallbackPatient = {
   id: "fallback",
   hn: "0001234",
   firstName: "สมชาย",
-  lastName: "พูนสุข",
+  lastName: "พูลสุข",
   gender: "ชาย",
   phone: "0812345678",
   insuranceType: "บัตรทอง",
@@ -76,8 +76,8 @@ const fallbackTimeline: TimelineRecord[] = [
 ]
 
 const adherenceWidgets = [
-  { title: "Medication adherence", value: "76%", note: "ยังมี missed doses เป็นบางวันช่วงสัปดาห์ก่อน", tone: "status-warning" },
-  { title: "Caregiver contactability", value: "ดี", note: "ติดต่อผู้ดูแลได้ช่วงเช้าและวันทำการ", tone: "status-success" },
+  { title: "Medication adherence", value: "76%", note: "ยังมี missed doses บางวันในสัปดาห์ก่อน", tone: "status-warning" },
+  { title: "Caregiver contactability", value: "ดี", note: "ติดต่อตัวผู้ดูแลได้ช่วงเช้าและวันทำการ", tone: "status-success" },
   { title: "Safety follow-up", value: "ติดตามต่อ", note: "ถ้าไม่มาตามนัดต้องโทรกลับภายใน 24-72 ชม.", tone: "status-danger" }
 ]
 
@@ -131,22 +131,22 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
   )
 
   return (
-    <div className="space-y-6">
-      <section className="section-card px-6 py-6 lg:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
+    <div className="space-y-4 md:space-y-5 xl:space-y-6">
+      <section className="section-card px-5 py-6 md:px-7 xl:px-8">
+        <div className="panel-head gap-4">
+          <div className="flex min-w-0 items-start gap-4">
             <Link
               href="/dashboard"
-              className="tap-soft inline-flex h-11 w-11 items-center justify-center rounded-2xl border bg-white"
+              className="tap-soft inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-white"
               style={{ borderColor: "var(--line)" }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </Link>
-            <div>
-              <span className="status-badge status-brand">Psychiatry Continuity Profile</span>
-              <h2 className="mt-3 text-[32px] font-semibold tracking-[-0.03em]">
+            <div className="min-w-0">
+              <span className="eyebrow">Psychiatry Continuity Profile</span>
+              <h2 className="mt-4 text-[28px] font-semibold tracking-[-0.04em] md:text-[36px]">
                 {patient.firstName} {patient.lastName}
               </h2>
               <p className="mt-2 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>
@@ -162,9 +162,9 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <div className="space-y-4">
-          <div className="section-card px-5 py-5">
+      <section className="content-grid xl:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="space-y-4 md:space-y-5">
+          <div className="section-card px-5 py-5 md:px-6">
             <div
               className="inline-flex h-16 w-16 items-center justify-center rounded-[24px] text-2xl font-semibold text-white"
               style={{ background: "linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%)" }}
@@ -187,7 +187,7 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
                 { label: "คะแนนเสี่ยง", value: `${Math.round(stats.noShowScore * 100)}%` },
                 { label: "อัตรามาตามนัด", value: `${stats.attendanceRate}%` }
               ].map((item) => (
-                <div key={item.label} className="rounded-[22px] bg-[var(--page-bg-soft)] px-4 py-4">
+                <div key={item.label} className="soft-block px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>
                     {item.label}
                   </p>
@@ -197,14 +197,14 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
             </div>
           </div>
 
-          <div className="section-card px-5 py-5">
-            <h3 className="text-xl font-semibold">Medication continuity</h3>
+          <div className="section-card px-5 py-5 md:px-6">
+            <h3 className="text-[24px] font-semibold tracking-[-0.03em]">Medication continuity</h3>
             <div className="mt-4 space-y-3">
               {[
                 { name: "Sertraline", dose: "50 mg เช้า", note: "เหลือยาถึงประมาณ 4 เม.ย. 2569" },
                 { name: "Lorazepam", dose: "0.5 mg ก่อนนอน", note: "ต้องประเมินการใช้ต่อเนื่องในการนัดหน้า" }
               ].map((item) => (
-                <div key={item.name} className="rounded-[22px] bg-[var(--surface-strong)] px-4 py-4" style={{ border: "1px solid var(--line)" }}>
+                <div key={item.name} className="surface-strong rounded-[24px] px-4 py-4">
                   <p className="text-base font-semibold">{item.name}</p>
                   <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>{item.dose}</p>
                   <p className="mt-2 text-xs leading-6" style={{ color: "var(--ink-muted)" }}>{item.note}</p>
@@ -213,27 +213,11 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
             </div>
           </div>
 
-          <div className="section-card px-5 py-5">
-            <h3 className="text-xl font-semibold">Care coordination</h3>
-            <div className="mt-4 space-y-3">
-              {[
-                "พยาบาลโทรยืนยันก่อนวันนัด 1 วัน",
-                "ตรวจสอบผู้ดูแลว่าสามารถพามารับบริการได้หรือไม่",
-                "หากไม่มาภายในวันนัด ให้สร้าง outreach task ทันที"
-              ].map((item) => (
-                <div key={item} className="flex gap-3 rounded-[20px] bg-[var(--page-bg-soft)] px-4 py-3">
-                  <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full" style={{ background: "var(--brand)" }} />
-                  <p className="text-sm leading-7">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="section-card px-5 py-5">
-            <h3 className="text-xl font-semibold">Assigned care tasks</h3>
+          <div className="section-card px-5 py-5 md:px-6">
+            <h3 className="text-[24px] font-semibold tracking-[-0.03em]">Assigned care tasks</h3>
             <div className="mt-4 space-y-3">
               {assignedTasks.map((item) => (
-                <div key={`${item.owner}-${item.task}`} className="rounded-[22px] bg-[var(--surface-strong)] px-4 py-4" style={{ border: "1px solid var(--line)" }}>
+                <div key={`${item.owner}-${item.task}`} className="surface-strong rounded-[24px] px-4 py-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-semibold">{item.owner}</p>
                     <span className={`status-badge ${item.tone}`}>{item.due}</span>
@@ -245,13 +229,13 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="section-card px-6 py-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-4 md:space-y-5">
+          <div className="section-card px-5 py-5 md:px-6">
+            <div className="panel-head">
               <div>
-                <h3 className="text-2xl font-semibold tracking-[-0.03em]">Clinical continuity summary</h3>
-                <p className="mt-1 text-sm" style={{ color: "var(--ink-muted)" }}>
-                  ภาพรวมสำหรับแพทย์ พยาบาล และทีมติดตาม ก่อนเริ่มการดูแลใน visit นี้
+                <h3 className="text-[24px] font-semibold tracking-[-0.03em]">Clinical continuity summary</h3>
+                <p className="mt-1 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>
+                  ภาพรวมสำหรับแพทย์ พยาบาล และทีมติดตามก่อนเริ่มการดูแลใน visit นี้
                 </p>
               </div>
               <span className="status-badge status-warning">ต้องติดตามต่อเนื่อง</span>
@@ -264,7 +248,7 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
                 { title: "Barrier หลัก", value: "การเดินทาง + ลืมนัด", note: "มีผู้ดูแลช่วยประสานได้" },
                 { title: "Caregiver", value: "บุตรสาว / โทร 089-111-xxxx", note: "ติดต่อได้ในช่วงเช้า" }
               ].map((item) => (
-                <div key={item.title} className="rounded-[24px] bg-[var(--surface-strong)] px-4 py-4" style={{ border: "1px solid var(--line)" }}>
+                <div key={item.title} className="surface-strong rounded-[24px] px-4 py-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>
                     {item.title}
                   </p>
@@ -276,7 +260,7 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
 
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               {adherenceWidgets.map((item) => (
-                <div key={item.title} className="rounded-[24px] bg-[var(--page-bg-soft)] px-4 py-4">
+                <div key={item.title} className="soft-block px-4 py-4">
                   <span className={`status-badge ${item.tone}`}>{item.title}</span>
                   <p className="mt-3 text-2xl font-semibold tracking-[-0.02em]">{item.value}</p>
                   <p className="mt-2 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>{item.note}</p>
@@ -285,12 +269,12 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
             </div>
           </div>
 
-          <div className="section-card px-6 py-6">
-            <div className="flex items-center justify-between gap-3">
+          <div className="section-card px-5 py-5 md:px-6">
+            <div className="panel-head">
               <div>
-                <h3 className="text-2xl font-semibold tracking-[-0.03em]">Timeline การรักษาและติดตาม</h3>
-                <p className="mt-1 text-sm" style={{ color: "var(--ink-muted)" }}>
-                  เห็นภาพว่าทีมเคยทำอะไรไปแล้วและ intervention แบบใดได้ผล
+                <h3 className="text-[24px] font-semibold tracking-[-0.03em]">Timeline การรักษาและติดตาม</h3>
+                <p className="mt-1 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>
+                  เห็น intervention ที่เคยทำและสิ่งที่ควรส่งต่อในรอบถัดไป
                 </p>
               </div>
               <span className="status-badge status-brand">{timeline.length} รายการล่าสุด</span>
@@ -298,7 +282,7 @@ export function PatientProfilePage({ patientId }: PatientProfilePageProps) {
 
             <div className="mt-5 space-y-3">
               {timeline.map((entry) => (
-                <div key={entry.id} className="rounded-[24px] bg-[var(--surface-strong)] px-4 py-4" style={{ border: "1px solid var(--line)" }}>
+                <div key={entry.id} className="surface-strong rounded-[24px] px-4 py-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <span className={`status-badge ${timelineTone(entry.type)}`}>{entry.type}</span>

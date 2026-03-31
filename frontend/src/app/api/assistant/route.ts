@@ -2,11 +2,12 @@ import { GoogleGenAI } from "@google/genai"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { ASSISTANT_SYSTEM_PROMPT, buildAssistantContext } from "@/lib/assistant-context"
+import { ASSISTANT_MODE_PROMPTS, ASSISTANT_SYSTEM_PROMPT, buildAssistantContext } from "@/lib/assistant-context"
 
 const requestSchema = z.object({
   message: z.string().min(1).max(4000),
   page: z.string().min(1).max(200),
+  mode: z.enum(["ops", "outreach", "scribe", "coding", "paperless", "jaidee"]),
   role: z.string().optional(),
   userName: z.string().optional()
 })
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
   try {
     const ai = new GoogleGenAI({ apiKey: geminiApiKey })
     const context = buildAssistantContext(parsed.data)
+    const modePrompt = ASSISTANT_MODE_PROMPTS[parsed.data.mode]
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
           role: "user",
           parts: [
             {
-              text: `${ASSISTANT_SYSTEM_PROMPT}\n\nบริบทระบบ:\n${context}\n\nคำขอจากผู้ใช้:\n${parsed.data.message}`
+              text: `${ASSISTANT_SYSTEM_PROMPT}\n\nคำแนะนำเฉพาะโหมด:\n${modePrompt}\n\nบริบทระบบ:\n${context}\n\nคำขอจากผู้ใช้:\n${parsed.data.message}`
             }
           ]
         }

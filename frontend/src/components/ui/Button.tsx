@@ -12,25 +12,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<Variant, React.CSSProperties> = {
   primary: {
-    background: "linear-gradient(135deg, #2e6f64 0%, #214f47 100%)",
+    background: "linear-gradient(135deg, #1f6f8b 0%, #184f72 100%)",
     color: "#fff",
     border: "1px solid transparent",
-    boxShadow: "0 14px 28px rgba(33,79,71,0.18)"
+    boxShadow: "0 14px 28px rgba(24,79,114,0.18)"
   },
   secondary: {
     background: "#ffffff",
-    color: "#173029",
-    border: "1px solid rgba(23,48,41,0.10)"
+    color: "#18344c",
+    border: "1px solid rgba(24,52,76,0.10)"
   },
   ghost: {
     background: "transparent",
-    color: "#36534b",
+    color: "#35546f",
     border: "1px solid transparent"
   },
   danger: {
-    background: "#fdebea",
-    color: "#bf5a53",
-    border: "1px solid rgba(191,90,83,0.20)",
+    background: "#fff0f2",
+    color: "#d35d6e",
+    border: "1px solid rgba(211,93,110,0.20)",
     boxShadow: "none"
   }
 }

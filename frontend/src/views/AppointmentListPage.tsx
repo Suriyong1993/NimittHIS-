@@ -69,13 +69,16 @@ export function AppointmentListPage() {
   }, [data])
 
   return (
-    <div className="space-y-6">
-      <section className="section-card px-6 py-6 lg:px-8">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <h2 className="section-title">Appointment Operations</h2>
-            <p className="section-subtitle mt-2">
-              มองทั้ง session capacity, ภาระแพทย์ และคิวรายบุคคลในหน้าจอเดียว เพื่อให้ nurse station จัด flow ได้ง่ายขึ้น
+    <div className="space-y-4 md:space-y-5 xl:space-y-6">
+      <section className="section-card px-5 py-6 md:px-7 xl:px-8">
+        <div className="panel-head gap-4">
+          <div className="max-w-3xl">
+            <span className="eyebrow">Appointment Operations</span>
+            <h2 className="mt-4 text-[28px] font-semibold tracking-[-0.04em] md:text-[36px]">
+              จัด flow คิวตรวจให้แพทย์และพยาบาลเห็นภาพเดียวกัน
+            </h2>
+            <p className="mt-3 text-sm leading-8 md:text-[15px]" style={{ color: "var(--ink-muted)" }}>
+              รวม session capacity ภาระแพทย์ และคิวผู้ป่วยไว้ในมุมมองเดียว เพื่อให้ nurse station บริหารคิวและการประสานงานได้เร็วขึ้น
             </p>
           </div>
 
@@ -88,7 +91,7 @@ export function AppointmentListPage() {
             ].map((item) => (
               <button
                 key={item.key}
-                className="tap-soft rounded-full px-4 py-2 text-sm font-semibold"
+                className="tap-soft rounded-full px-4 py-2.5 text-sm font-semibold"
                 style={
                   filter === item.key
                     ? { background: "var(--brand)", color: "white" }
@@ -103,9 +106,9 @@ export function AppointmentListPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-3">
+      <section className="content-grid xl:grid-cols-3">
         {sessionSummary.map((session) => (
-          <div key={session.clinic} className="section-card px-5 py-5">
+          <div key={session.clinic} className="section-card px-5 py-5 md:px-6">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xl font-semibold">{session.clinic}</h3>
@@ -118,27 +121,33 @@ export function AppointmentListPage() {
               </span>
             </div>
 
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--page-bg-soft)]">
+            <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[var(--page-bg-soft)]">
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${Math.round((session.confirmed / session.total) * 100)}%`,
-                  background: "linear-gradient(90deg, var(--brand) 0%, var(--success) 100%)"
+                  background: "linear-gradient(90deg, var(--brand) 0%, var(--accent) 100%)"
                 }}
               />
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-3">
-              <div className="rounded-[20px] bg-[var(--page-bg-soft)] px-3 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>Capacity</p>
+              <div className="soft-block px-3 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>
+                  Capacity
+                </p>
                 <p className="mt-2 text-2xl font-semibold">{session.total}</p>
               </div>
-              <div className="rounded-[20px] bg-[var(--page-bg-soft)] px-3 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>Waiting</p>
+              <div className="soft-block px-3 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>
+                  Waiting
+                </p>
                 <p className="mt-2 text-2xl font-semibold">{session.waiting}</p>
               </div>
-              <div className="rounded-[20px] bg-[var(--page-bg-soft)] px-3 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>Load</p>
+              <div className="soft-block px-3 py-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--ink-muted)" }}>
+                  Load
+                </p>
                 <p className="mt-2 text-2xl font-semibold">{Math.round((session.confirmed / session.total) * 100)}%</p>
               </div>
             </div>
@@ -146,28 +155,35 @@ export function AppointmentListPage() {
         ))}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <section className="content-grid xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
         <div className="section-card overflow-hidden">
-          <div className="border-b px-6 py-5" style={{ borderColor: "var(--line)" }}>
-            <h3 className="text-xl font-semibold">คิวตรวจและสถานะล่าสุด</h3>
+          <div className="border-b px-5 py-5 md:px-6" style={{ borderColor: "var(--line)" }}>
+            <div className="panel-head">
+              <div>
+                <h3 className="text-[24px] font-semibold tracking-[-0.03em]">คิวตรวจและสถานะล่าสุด</h3>
+                <p className="mt-1 text-sm leading-7" style={{ color: "var(--ink-muted)" }}>
+                  มุมมองที่อ่านง่ายทั้งบน desktop และ tablet หน้าห้องตรวจ
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="px-4 py-4 lg:px-6">
+          <div className="px-4 py-4 md:px-6">
             <div className="space-y-3">
               {appointments.map((appointment) => {
                 const status = appointmentStatus(appointment.status)
                 return (
                   <div
                     key={appointment.id}
-                    className="surface-strong grid gap-4 rounded-[24px] px-4 py-4 lg:grid-cols-[88px_minmax(0,1fr)_190px_130px]"
+                    className="surface-strong grid gap-4 rounded-[26px] px-4 py-4 lg:grid-cols-[88px_minmax(0,1fr)_200px_120px] lg:items-center"
                   >
                     <div>
-                      <p className="text-lg font-semibold">{appointment.timeFrom}</p>
+                      <p className="text-xl font-semibold">{appointment.timeFrom}</p>
                       <p className="mt-1 text-xs font-medium" style={{ color: "var(--ink-muted)" }}>
                         {new Date(appointment.appointmentDate).toLocaleDateString("th-TH")}
                       </p>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-base font-semibold">
                         {appointment.patient?.firstName} {appointment.patient?.lastName}
                       </p>
@@ -183,7 +199,7 @@ export function AppointmentListPage() {
                         session workload monitoring
                       </p>
                     </div>
-                    <div className="flex items-center lg:justify-end">
+                    <div className="lg:justify-self-end">
                       <span className={`status-badge ${status.className}`}>{status.label}</span>
                     </div>
                   </div>
@@ -193,24 +209,24 @@ export function AppointmentListPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="section-card px-6 py-6">
-            <h3 className="text-xl font-semibold">งานประสานเวร</h3>
+        <div className="space-y-4 md:space-y-5">
+          <div className="section-card px-5 py-5 md:px-6">
+            <h3 className="text-[24px] font-semibold tracking-[-0.03em]">งานประสานเวร</h3>
             <div className="mt-4 space-y-3">
               {[
-                "ล็อกคิว room ที่มีแพทย์ล่าช้ากว่าเวลาเกิน 15 นาที",
-                "คิวเสี่ยงขาดนัดให้แยกไว้ก่อนเพื่อโทรติดตามทันที",
-                "ถ้าผู้ป่วย walk-in ให้เทียบ session capacity ก่อนใส่คิว"
+                "ล็อกคิวห้องตรวจที่แพทย์ล่าช้าเกิน 15 นาที แล้วแจ้งหน้าห้อง",
+                "แยกคิวเสี่ยงขาดนัดไว้ก่อนเพื่อโทรยืนยันในช่วงเช้า",
+                "ถ้ามี walk-in ให้เทียบ session capacity ก่อนเพิ่มคิว"
               ].map((item) => (
-                <div key={item} className="rounded-[20px] bg-[var(--page-bg-soft)] px-4 py-3 text-sm leading-7">
+                <div key={item} className="soft-block px-4 py-4 text-sm leading-7">
                   {item}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="section-card px-6 py-6">
-            <h3 className="text-xl font-semibold">โหลดแพทย์</h3>
+          <div className="section-card px-5 py-5 md:px-6">
+            <h3 className="text-[24px] font-semibold tracking-[-0.03em]">โหลดแพทย์</h3>
             <div className="mt-4 space-y-3">
               {sessionSummary.map((session) => (
                 <div key={session.doctor} className="surface-strong rounded-[22px] px-4 py-4">
