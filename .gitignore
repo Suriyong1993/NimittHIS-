@@ -10,3 +10,5 @@ frontend/dist
 backend/prisma/dev.db
 *.log
 frontend/.next
+archive/
+external/
